@@ -1,0 +1,38 @@
+=== COPY EVERYTHING BELOW THIS LINE AND PASTE IT AS ONE MESSAGE IN GOOGLE AI STUDIO ===
+(Ek chat/message = ek file. Pichhla step verify hone ke baad hi agla.)
+
+PART 1 - PROJECT CONTEXT
+You are working on an EXISTING app: "Personal Goal OS" (AbhiOS). Single real user (Abhishek), Android-first PWA.
+
+Stack (do not change): Next.js 15 App Router, React 19, TypeScript, Tailwind v4, Firebase Auth (Google sign-in) with firebase-admin token verification, Postgres via Drizzle ORM (src/db/schema.ts, repository.ts), web-push, optional Gemini via @google/genai. UI text is Hinglish and lives in src/lib/strings.ts.
+Key files: src/context/goal-os-context.tsx (client state + sync), src/db/repository.ts, src/db/schema.ts, src/lib/logic/* (pure functions: dates, planner, attention, quality-gate, tick-logic, tested in rules.test.ts with node:test), app/api/{state,cron/tick,done,ai/suggest}/route.ts, public/sw.js, app/manifest.ts.
+
+Product rules: Brain Dump first; goals must pass a Quality Gate; no streaks, no guilt, no life score; AI is optional and only drafts (never auto-changes data); everything works without AI; "today" is computed with timezone + dayRolloverHour (never UTC date slicing).
+
+Engineering rules (follow strictly):
+1. Do NOT rewrite or restyle working UI. Make the smallest change that satisfies the task. Do not rename or move files unless the task says so.
+2. No new dependencies unless the task explicitly allows them.
+3. Every API route: validate HTTP method, authenticate (Firebase ID token for user routes, CRON_SECRET for cron), validate and size-limit input, return Cache-Control: no-store, never leak internal error details, never log tokens or secrets.
+4. Every database read/write/update/delete must be scoped to the authenticated user (WHERE user_id = uid). A user must never be able to modify another user's rows.
+5. Never use a default/fallback secret. If a required secret is missing, fail closed.
+6. Keep business logic pure in src/lib/logic and add tests for every new logic function in rules.test.ts (or a new *.test.ts). Run: node tests, `tsc --noEmit`, and lint. Fix errors you introduce.
+7. Use strings.ts for all user-visible text (Hinglish).
+8. Touch targets >= 44px, input font-size 16px, mobile-first.
+9. At the end of every task, output: (a) list of files changed, (b) any new env vars, (c) exact manual test steps, (d) anything you were unsure about. If a requirement is ambiguous, ask ONE question before coding.
+DEPLOYMENT FACTS (important):
+- Code lives on GitHub. Deployed on Vercel (serverless; every API route is a serverless function). Coding is done in Google AI Studio.
+- Database: Google Cloud SQL (PostgreSQL), accessed with Drizzle + pg using env vars SQL_HOST / SQL_USER / SQL_PASSWORD / SQL_DB_NAME. NOT Supabase. Auth: Firebase Auth (Google sign-in).
+- Serverless implications: DB connections must stay small (pool max 1-2 per instance), no in-memory state shared between requests, no background timers, scheduled work is triggered by an external HTTP call to /api/cron/tick.
+
+
+PART 2 - YOUR TASK: PROMPT 6 - UI AS PER MY SKETCHES
+
+Task: compare the current UI with my hand sketches in public/assets/aistudio/*.jpg and adjust with MINIMAL changes.
+
+1. Goals screen (sketch "Goals"): top shows Life Area cards (Health, Finance, Relationship, ...) each with a count of ongoing (active) goals. Tapping a card opens that area's goals list. At the bottom: "Add new" and "Edit" actions. Keep Candidates and Someday/Maybe tabs.
+2. Brain Dump screen (sketch "Brain Dump"): a large empty text box at top, a "Relax" button under it (saves the text as an Unprocessed inbox item, clears the box, shows a calm toast), then a numbered list of recent items, each with a small action button.
+Do not remove existing features; if the existing screen already matches the sketch, say so and change nothing. Keep Hinglish labels in strings.ts; mobile-first.
+
+CHECK: dono screens sketch se match karti hain; purane features (triage, quality gate) abhi bhi kaam karte hain.
+
+Before editing any file, start with a short plan (max 8 lines: files you will touch, risks, anything unclear). Then implement. Do not touch files outside this task. If you must, explain why.

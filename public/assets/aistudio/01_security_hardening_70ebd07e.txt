@@ -1,0 +1,50 @@
+=== COPY EVERYTHING BELOW THIS LINE AND PASTE IT AS ONE MESSAGE IN GOOGLE AI STUDIO ===
+(Ek chat/message = ek file. Pichhla step verify hone ke baad hi agla.)
+
+PART 1 - PROJECT CONTEXT
+You are working on an EXISTING app: "Personal Goal OS" (AbhiOS). Single real user (Abhishek), Android-first PWA.
+
+Stack (do not change): Next.js 15 App Router, React 19, TypeScript, Tailwind v4, Firebase Auth (Google sign-in) with firebase-admin token verification, Postgres via Drizzle ORM (src/db/schema.ts, repository.ts), web-push, optional Gemini via @google/genai. UI text is Hinglish and lives in src/lib/strings.ts.
+Key files: src/context/goal-os-context.tsx (client state + sync), src/db/repository.ts, src/db/schema.ts, src/lib/logic/* (pure functions: dates, planner, attention, quality-gate, tick-logic, tested in rules.test.ts with node:test), app/api/{state,cron/tick,done,ai/suggest}/route.ts, public/sw.js, app/manifest.ts.
+
+Product rules: Brain Dump first; goals must pass a Quality Gate; no streaks, no guilt, no life score; AI is optional and only drafts (never auto-changes data); everything works without AI; "today" is computed with timezone + dayRolloverHour (never UTC date slicing).
+
+Engineering rules (follow strictly):
+1. Do NOT rewrite or restyle working UI. Make the smallest change that satisfies the task. Do not rename or move files unless the task says so.
+2. No new dependencies unless the task explicitly allows them.
+3. Every API route: validate HTTP method, authenticate (Firebase ID token for user routes, CRON_SECRET for cron), validate and size-limit input, return Cache-Control: no-store, never leak internal error details, never log tokens or secrets.
+4. Every database read/write/update/delete must be scoped to the authenticated user (WHERE user_id = uid). A user must never be able to modify another user's rows.
+5. Never use a default/fallback secret. If a required secret is missing, fail closed.
+6. Keep business logic pure in src/lib/logic and add tests for every new logic function in rules.test.ts (or a new *.test.ts). Run: node tests, `tsc --noEmit`, and lint. Fix errors you introduce.
+7. Use strings.ts for all user-visible text (Hinglish).
+8. Touch targets >= 44px, input font-size 16px, mobile-first.
+9. At the end of every task, output: (a) list of files changed, (b) any new env vars, (c) exact manual test steps, (d) anything you were unsure about. If a requirement is ambiguous, ask ONE question before coding.
+DEPLOYMENT FACTS (important):
+- Code lives on GitHub. Deployed on Vercel (serverless; every API route is a serverless function). Coding is done in Google AI Studio.
+- Database: Google Cloud SQL (PostgreSQL), accessed with Drizzle + pg using env vars SQL_HOST / SQL_USER / SQL_PASSWORD / SQL_DB_NAME. NOT Supabase. Auth: Firebase Auth (Google sign-in).
+- Serverless implications: DB connections must stay small (pool max 1-2 per instance), no in-memory state shared between requests, no background timers, scheduled work is triggered by an external HTTP call to /api/cron/tick.
+
+
+PART 2 - YOUR TASK: PROMPT 1 - SECURITY HARDENING (no UI changes)
+
+Task: harden the backend. Do not change any visible UI except the "no access" screen in step 4.
+
+1. Remove the fallback secret 'goalos-default-local-secret' from app/api/cron/tick/route.ts and app/api/done/route.ts. Move signing/verification into src/lib/done-token.ts (signDoneToken, verifyDoneToken using HMAC-SHA256 + timingSafeEqual). If DONE_LINK_SECRET is missing, throw/return 500 (fail closed). Validate token shape before use.
+2. Create src/lib/auth-server.ts with verifyBearerUser(req) (move it from app/api/state/route.ts) and requireCron(req) (Bearer CRON_SECRET, timingSafeEqual, fail closed if CRON_SECRET missing). Use them everywhere.
+3. app/api/cron/tick/route.ts must require requireCron. Remove the client-supplied `state` / overrideDate / overrideNowMin path from this route. If an interactive preview is still wanted, move it to a NEW route app/api/reminders/preview/route.ts that requires a Firebase user token and only evaluates that user's OWN state; it must never sign tokens.
+4. Add ALLOWED_EMAILS env (comma-separated). In /api/state (GET and POST) and /api/ai/suggest, if the decoded token email is not in the list, return 403. In the UI, if /api/state returns 403, show a simple "Is account ko access nahi hai" screen with a logout button. If ALLOWED_EMAILS is unset, deny all (fail closed) and log a clear server warning.
+5. app/api/ai/suggest/route.ts: require verifyBearerUser; limit text to 2000 chars and context JSON to 8 KB; add a per-user daily call cap (env AI_DAILY_LIMIT, default 40) stored in a new table ai_usage(user_id, day, count) with a Drizzle migration; read the model from env GEMINI_MODEL (default must be a valid current model id - look up the currently available id in AI Studio's model list; do not guess). Do not swallow Gemini errors silently: log the error class server-side and return { aiUsed:false, reason:'quota'|'model_error'|'no_key'|'timeout' } alongside the deterministic draft. Show a small non-blocking note in the UI when reason is not 'no_key'.
+6. src/db/repository.ts: every upsert must be ownership-safe. Use onConflictDoUpdate with setWhere (table.userId = uid) and, if a conflicting id exists under a DIFFERENT user_id, throw a 409-style error instead of updating. Make seed ids unique per user (e.g. suffix with a short hash of uid or use crypto.randomUUID()) in src/lib/seed-data.ts WITHOUT breaking existing users' data (existing rows keep their ids).
+7. /api/state POST: add a validator (hand-written, no new deps) for the sync payload: required arrays are arrays, max counts (e.g. 5000 per collection), max string lengths, allowed enum values. Reject with 400 on failure. Reuse validateImportPayload logic where possible.
+8. next.config.ts: add security headers via headers(): X-Content-Type-Options nosniff, X-Frame-Options DENY, Referrer-Policy no-referrer, Permissions-Policy (camera/geo off, microphone self), and a reasonable Content-Security-Policy that still allows Firebase Auth popup, Google fonts if used, and the Gemini/Firebase endpoints actually used. Test that login and the app still work.
+9. Add .aistudio/ to .gitignore. Update .env.example with every env var used.
+10. Add tests: done-token sign/verify (valid, tampered, expired, wrong secret), allowlist helper, payload validator.
+
+CHECK (tum karo):
+- curl /api/cron/tick bina header -> 401. Galat secret -> 401. CRON_SECRET unset -> 500/401 (kabhi 200 nahi).
+- curl /api/ai/suggest bina token -> 401.
+- Doosre Google account se login -> "access nahi hai" screen.
+- Normal login, routine tick, brain dump save sab pehle jaise chalte hain.
+- npm run lint, tsc --noEmit, node tests pass.
+
+Before editing any file, start with a short plan (max 8 lines: files you will touch, risks, anything unclear). Then implement. Do not touch files outside this task. If you must, explain why.

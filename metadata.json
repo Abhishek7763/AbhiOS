@@ -1,0 +1,6 @@
+{
+  "name": "Personal Goal OS",
+  "description": "Brain-dump-first personal growth, quality-gated goals, duty-aware daily routines, and guilt-free review operating system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

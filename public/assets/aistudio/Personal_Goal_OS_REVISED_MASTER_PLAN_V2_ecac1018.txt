@@ -1,0 +1,1449 @@
+PERSONAL GOAL OS — REVISED MASTER PLAN (V2)
+BRAIN DUMP FIRST + QUALITY-GATED GOALS
+Revision date: 30 October 2026
+
+PURPOSE OF THIS REVISION
+This revision updates the original FINAL BUILD PLAN using the earlier handover,
+Architecture & Concept Blueprint, Review Brief, and Abhishek's new requirement:
+the Universal Brain Dump must be the first step. Any thought can be captured
+without deciding what it means yet. A thought must NOT automatically become a
+goal, task, habit, or commitment.
+
+AUTHORITY RULE
+Read this revision first. Its Brain Dump, triage, goal-quality gate, data model,
+screens, and phase-order rules override conflicting parts of the original plan
+included later in this file. The original technical/security requirements remain
+in force unless explicitly changed here. This is still a planning document:
+do not start implementation until infrastructure choice and this revised flow
+are agreed.
+
+============================================================
+1. THE CORRECT CORE FLOW
+============================================================
+
+CAPTURE → CLARIFY → CLASSIFY → DECIDE → PLAN → EXECUTE → REVIEW → ADJUST
+
+1. CAPTURE (Brain Dump / Universal Inbox)
+   - User can instantly type or paste anything: thought, wish, worry, idea,
+     reminder, task, opportunity, question, habit idea, or random note.
+   - Quick capture should take about 5 seconds and require only the text.
+   - No category, deadline, life area, goal, priority, or explanation is required
+     during capture. Optional voice capture can be considered later.
+   - Save first; organize later. The system must never interrupt capture with
+     a questionnaire.
+   - Capture is not a promise. Saving a thought does not create an obligation.
+
+2. CLARIFY (processing queue)
+   - When the user has time, process one item at a time.
+   - Show the original text and offer concise suggested interpretations.
+   - Ask a question only if it materially helps decide what the item means.
+   - Let the user edit the wording, split one item into several items, merge
+     duplicates, defer processing, archive, or delete.
+   - AI suggestions must be labelled as suggestions. No automatic promotion,
+     commitment, deletion, or deadline assignment.
+
+3. CLASSIFY (item types)
+   Each inbox item can be classified as one of:
+   A. Next action / task — a specific action the user can actually do.
+   B. Goal candidate — a desired outcome that may deserve sustained effort.
+   C. Project — a multi-step piece of work with a finish line, often supporting
+      a goal but sometimes useful on its own.
+   D. Routine / habit candidate — a repeatable behaviour or process.
+   E. Reference / knowledge — information to keep, not an action.
+   F. Idea / experiment — something to explore without committing.
+   G. Someday / maybe — a possibility intentionally not active now.
+   H. Concern / question — something to understand, resolve, or revisit.
+   I. Waiting for / delegated — something dependent on another person/event.
+   J. Trash / duplicate — only after the user confirms.
+   These types are not all equal. In particular, “Goal candidate” is not yet an
+   active goal, and “Idea” is not automatically a task.
+
+4. DECIDE (explicit user choice)
+   The user chooses the next state: act now, schedule, make a goal candidate,
+   keep as reference, put in Someday/Maybe, wait, archive, or discard.
+   If unsure, leave it in the inbox or defer it. There is no penalty for
+   uncertainty and no requirement to process the entire inbox at once.
+
+5. PLAN
+   Only accepted active goals proceed into structured planning:
+   Goal → Milestones → Project(s), where useful → Next actions / tasks →
+   optional calendar schedule.
+   Repeatable behaviours can be linked as habits/routines. Not every goal needs
+   a project, not every task needs a goal, and not every goal needs a deadline.
+   The system should not force unnecessary hierarchy.
+
+6. EXECUTE
+   The Today view shows a manageable set of actions and routines. The user can
+   complete, reschedule, shrink, pause, or cancel an action. The system should
+   optimize for useful execution, not for filling the calendar.
+
+7. REVIEW & ADJUST
+   Daily review handles loose ends briefly. Weekly review checks whether active
+   goals still matter, progress is realistic, and the plan fits actual life.
+   Reviews change the plan, not the user's worth. Gaps are handled with a
+   low-friction restart, not guilt or streak punishment.
+
+============================================================
+2. GOAL QUALITY GATE — A THOUGHT MUST EARN GOAL STATUS
+============================================================
+
+When the user selects “Consider as Goal”, create a Goal Candidate, not an
+active goal. Then guide the user through a short, adaptive review. Do not ask
+every question if the answers are already clear.
+
+Core questions:
+1. Desired outcome: What do you want to be different or true?
+2. Personal reason: Why does this matter to you personally?
+3. Ownership: Is this genuinely wanted by you, or mostly comparison, pressure,
+   fear of missing out, or someone else's expectation? The system must invite
+   reflection, not claim to know the user's “true” motives.
+4. Evidence: How would you recognize meaningful progress or completion?
+5. Control: Which part is within your influence, and what depends on others?
+6. Cost/trade-off: What time, money, energy, or attention will this consume?
+   What might need to be reduced or paused?
+7. Capacity: What is a realistic minimum next action and when could it fit?
+8. Horizon: Is this ongoing, direction-based, or a time-bound outcome?
+9. Classification check: Is this actually a goal, a project, one task, a habit,
+   a wish, a problem to solve, or information to keep?
+
+Goal acceptance outcomes:
+- ACCEPT AS ACTIVE GOAL: user confirms it matters and accepts the trade-offs.
+- REFINE: outcome is vague, oversized, or mixed with several different goals.
+- CONVERT TO PROJECT/TASK/HABIT: the item was misclassified as a goal.
+- SOMEDAY / MAYBE: worth keeping, but not a current commitment.
+- KEEP AS IDEA / REFERENCE: useful without action now.
+- DECLINE / ARCHIVE: user decides it is not worth pursuing.
+
+A goal should normally have:
+- A clear outcome or direction in the user's own words.
+- A recorded personal reason (can be brief).
+- A life area (editable; not a rigid taxonomy).
+- A goal type: time-bound outcome or ongoing direction/system.
+- A status: candidate, active, paused, completed, abandoned/archived.
+- A review date or review cadence, even if it has no deadline.
+- A plausible next action OR an explicit note that the next step is still unclear.
+- Optional evidence/measure of progress; do not force a numeric metric for every
+  personal, relational, or exploratory goal.
+
+Important safeguards:
+- The user always makes the final decision. AI cannot approve a goal by itself.
+- Never auto-create a deadline, daily commitment, habit, or task just because
+  the user wrote a thought.
+- A large or expensive goal may show a gentle “sleep on it / revisit tomorrow”
+  suggestion, but never impose a blocking cooldown.
+- Active-goal count warning is advisory, not a hard limit. If too many goals
+  are active, suggest choosing, pausing, or reducing scope; do not shame/block.
+- A goal can be valid even if the user cannot currently commit time to it; it
+  can stay in Someday/Maybe without being lost.
+- The AI must not diagnose motives or use spiritual/philosophical concepts as
+  scientific facts. Self-inquiry prompts are optional reflection aids.
+
+============================================================
+3. UNIVERSAL INBOX SCREEN — REQUIRED BEHAVIOUR
+============================================================
+
+Quick capture:
+- A persistent “+ Brain Dump” action should be available from the main app.
+- One multiline text field; Save/Enter saves the raw item to Inbox. On mobile,
+  use a clear Save button and preserve accidental line breaks.
+- Optional capture source and timestamp may be stored automatically.
+- After save, show a small confirmation and allow immediate next capture.
+- No required category or extra helper text that slows down capture.
+
+Inbox processing view:
+- Tabs/filters: Unprocessed | Waiting | Someday/Maybe | Processed/Archived.
+- Default queue shows unprocessed items in capture order, with optional sort.
+- Each card offers: Process, Split, Merge/duplicate, Defer, Archive, Delete.
+- Processing starts with suggested category choices, not a forced AI chat.
+- User can manually choose any category even if AI recommends another.
+- “Not sure yet” is a valid outcome.
+- Processed items retain a link to the resulting task/goal/project/habit where
+  applicable, so the origin and decision history can be traced.
+- Deletion is reversible where practical (trash/undo); do not permanently
+  delete by an ambiguous one-tap gesture.
+- Show a gentle count of old inbox items only as information, not a guilt alert.
+
+============================================================
+4. DATA MODEL CHANGES REQUIRED
+============================================================
+
+The original plan already has inbox_items, goals, milestones, tasks, life_areas,
+routines, reviews, and daily execution tables. Keep that modular base, but
+extend the Brain Dump → decision → goal candidate pathway before implementation.
+
+Inbox item fields to consider:
+- id, user_id, content, created_at, updated_at
+- status: new, processing, waiting, processed, someday, archived, trash
+- item_type: unknown, task, goal_candidate, project, habit_candidate,
+  reference, idea, concern, waiting_for, duplicate
+- source (manual initially; future sources optional)
+- processed_at, archived_at
+- decision_note (optional short reason)
+- linked entity type + linked entity id, or a safer explicit link table if
+  multiple outputs are possible
+- AI suggestion metadata only if useful; do not store private chain-of-thought.
+
+Goal fields to review/add:
+- status must distinguish candidate from active (e.g. candidate, active, paused,
+  completed, abandoned/archived).
+- goal_type: outcome / ongoing_direction.
+- desired_outcome, purpose_reason, evidence_of_progress (optional).
+- tradeoffs/constraints (optional, concise).
+- review_date or review cadence.
+- origin_inbox_item_id (nullable provenance link).
+- Do not require deadline; support no deadline for ongoing goals.
+
+Relationships:
+- One inbox item may produce zero, one, or several entities after splitting.
+- One task may be standalone; linking to a goal/milestone is optional.
+- A goal can have milestones, but a simple goal can go directly to tasks.
+- A project is distinct from a milestone: milestone is a meaningful checkpoint;
+  project is a bounded body of work. Avoid treating these as interchangeable.
+- A habit/routine is a repeatable process and can optionally support a goal.
+- All owned records retain strict user ownership, RLS, and appropriate foreign
+  keys. Never trust client-provided user_id.
+
+Before changing SQL:
+1. Review the current original migration and all references.
+2. Design the revised schema and constraints.
+3. Check migration/backward-compatibility and RLS test cases.
+4. Only then create a migration; do not casually rewrite live data.
+
+============================================================
+5. NAVIGATION AND SCREEN ORDER
+============================================================
+
+Keep the mobile-first bottom navigation simple. Recommended primary navigation:
+Today | Brain Dump / Inbox | Tasks | Goals | Settings
+
+- “Brain Dump” should be visually easy to reach from every screen.
+- Brain Dump capture must be faster than creating a task or goal manually.
+- Inbox processing belongs inside the Inbox screen; it does not need a separate
+  permanent navigation tab unless testing shows it is confusing.
+- Goal Candidate review can be a guided sheet/screen opened from Inbox.
+- Goals screen should show active goals by life area, with candidate/someday
+  lists accessible but not mixed into the active commitment list.
+- Today remains focused on current execution, not a giant list of all life
+  ambitions. The user can choose to reveal other information.
+
+============================================================
+6. REVISED BUILD ORDER — BRAIN DUMP FIRST
+============================================================
+
+Do not start with reminders or routines. The information pipeline is foundational.
+Recommended phase order:
+
+P0 — Decisions & repository setup
+  Confirm whether to use the existing AbhiOs repository/Supabase project or
+  create a dedicated private repo and fresh Supabase project. Document the
+  decision, source-of-truth docs, deployment, and rollback plan.
+  Acceptance: project target and ownership are explicit; no production data is
+  modified unexpectedly.
+
+P1 — Data model & security design
+  Design inbox statuses/types, goal candidates, active-goal gate, provenance,
+  entity relationships, RLS, and migration strategy.
+  Acceptance: schema review and ownership/RLS tests pass before UI is built.
+
+P2 — App shell + authentication + Brain Dump capture
+  Build the mobile shell, login, quick capture, Inbox list, edit, archive/trash,
+  and reliable save/loading/error states.
+  Acceptance: capture a thought in a few seconds on phone; it persists after
+  reload; no category is required; unauthenticated access is blocked.
+
+P3 — Inbox processing & classification
+  Add manual triage, split, merge/duplicate handling, defer, Someday/Maybe,
+  reference, waiting-for, and traceable conversion links.
+  AI is not required for this phase.
+  Acceptance: every item can be safely left undecided or assigned a user-chosen
+  type without accidentally becoming an active goal/task.
+
+P4 — Goal Candidate & quality gate
+  Build the adaptive goal clarification flow and explicit user approval.
+  Start with deterministic questions/rules; AI can later suggest concise
+  questions, rephrasing, and classification.
+  Acceptance: a candidate cannot become active without user confirmation;
+  goal vs task/project/habit/reference outcomes work; no auto-deadlines.
+
+P5 — Goals, life areas, milestones, projects, and next actions
+  Implement accepted active goals and the lightest useful breakdown. Avoid
+  mandatory hierarchy where it adds no value.
+  Acceptance: a user can create a valid goal, pause it, link a next action, and
+  trace it back to the originating inbox item.
+
+P6 — Tasks, calendar/scheduling, Today execution
+  Add task states, schedule/reschedule/split/cancel, day plan, main priority,
+  minimum viable day, and workload-aware recommendations.
+  Acceptance: tasks appear on the intended local date; timezone/rollover tests
+  pass; recommendations are explainable and editable.
+
+P7 — Routines & habit systems
+  Add daily routines, water tracking, duty/off-day context, and repeatable
+  actions. Keep habit completion separate from goal achievement.
+  Acceptance: routines work without a linked goal; skipped routines do not
+  create guilt or corrupt progress.
+
+P8 — Daily and weekly review + re-entry
+  Add brief daily close-out, weekly goal review, plan adjustments, and a gentle
+  return after gaps.
+  Acceptance: overdue tasks can be shrunk/rescheduled/cancelled/archived; review
+  never requires the user to complete every missed task.
+
+P9 — Notifications/reminder engine
+  Only after the core workflow is stable: permissions, push, quiet hours,
+  dedupe, caps, security, cron, and test notifications.
+  Acceptance: reminders respect preferences and do not duplicate or send in
+  quiet hours; explain that browser/OS delivery is not guaranteed to the minute.
+
+P10 — Export/import, security hardening, accessibility, polish
+  Backup/restore validation, error states, mobile touch targets, performance,
+  audit, deployment smoke tests.
+  Acceptance: export and restore are tested on a clean test environment; RLS
+  and security checks pass.
+
+P11 — Optional AI assistance
+  Add server-side, provider-agnostic AI only for suggestions: classification,
+  clarification, goal refinement, goal breakdown, task splitting, and planning.
+  AI outputs must be validated against a strict schema; user approves changes.
+  Core features must work without AI. Do not store hidden reasoning; store only
+  user-approved decisions and concise explanations.
+
+P12 — Future modules
+  Optional voice capture, knowledge links, finance/study/fitness modules, focus
+  timer, offline write queue, and analytics only when the core system is useful.
+  Do not add these to the initial scope by default.
+
+============================================================
+7. PRODUCT PRINCIPLES / WHAT NOT TO DO
+============================================================
+
+- Capture first, organize later.
+- A thought is not a commitment.
+- A goal candidate is not an active goal.
+- No AI action that creates, changes, deletes, schedules, or commits something
+  without the user's explicit confirmation.
+- No forced numeric score for a person's life, no “Life Score”, and no streak
+  punishment.
+- Do not turn every life area into a goal or every goal into daily tasks.
+- Do not use active-goal count as a strict limit.
+- Do not overwhelm the Today screen with all inbox items, distant deadlines,
+  or long-term outcomes.
+- Avoid excessive reminders and repetitive review forms.
+- Keep AI optional and the core product useful without AI.
+- Separate evidence-backed behavioural principles from popular frameworks,
+  metaphors, and spiritual reflection prompts.
+- Modular boundaries must be real: screen/UI, data access, pure logic/rules, and
+  optional AI integration stay separated.
+- Keep an audit trail for important user-approved transitions without collecting
+  unnecessary sensitive data.
+
+============================================================
+8. DECISIONS STILL REQUIRED BEFORE CODING
+============================================================
+
+1. Infrastructure: use existing AbhiOs + current Supabase project, or create
+   a dedicated private repo and fresh Supabase project?
+2. Is the app strictly single-user/private for the first version? (The original
+   plan assumes single-user.)
+3. Should AI be absent from the first release and added after manual triage, or
+   should the first release include only optional AI suggestions behind a
+   confirmation step? Recommended: manual-first; add AI later.
+4. Should capture support plain text only initially? Recommended: yes, to keep
+   capture reliable; voice/image capture can be future modules.
+
+Default recommendation if no other preference is stated:
+manual-first Brain Dump, strict user-approved goal gate, AI later, and no coding
+until the revised flow and infrastructure target are confirmed.
+
+============================================================
+9. ORIGINAL MASTER PLAN (PRESERVED BELOW)
+============================================================
+
+The following original plan is retained for its technical details, implementation
+contracts, reminder logic, security rules, testing, backup, and deployment.
+Where it conflicts with Sections 1–8 above, Sections 1–8 of this revision win.
+
+
+PERSONAL GOAL OS - FINAL BUILD PLAN (MASTER DOCUMENT)
+Version 1.0 | 30 Oct 2026 | Owner: Abhishek (single user) | Phone: Android
+Language: Hinglish (code comments English)
+
+Is file ka use:
+  Ye file tumhari "single source of truth" hai. Har AI chat me isse (ya iske
+  Appendix A BRIEF + jo step bana rahe ho wo section) paste karke code
+  banwana hai. Har step ke baad STATE.md (Appendix B) update karna hai taaki
+  naya AI chat wahin se continue kare.
+
+NOTE: 14-day test aur Phase 0 manual test hata diye gaye (tumhari choice).
+Sirf ek rule rakha hai: har step ke "Acceptance test" pass hone ke baad hi
+agla step. Ye test nahi, quality gate hai - bina iske AI-generated code
+jaldi toot-ta hai.
+
+============================================================
+CONTENTS
+============================================================
+ 1. Decisions locked (final choices)
+ 2. Tumhe kya karna hai (manual setup)
+ 3. Architecture
+ 4. Repo structure
+ 5. Database (full SQL)
+ 6. Date / time rules
+ 7. Frontend architecture + module contracts
+ 8. Screens spec
+ 9. Business logic (planner, review, minimum day)
+10. Backend API + Reminder engine
+11. Security checklist
+12. Build steps S0-S10 (with acceptance tests)
+13. Phase 2: AI
+14. Phase 3+: later
+15. Free AI models ke saath kaise build karna hai
+16. Testing, backup, restore
+17. Deployment + Android setup
+Appendix A: PROJECT_BRIEF (copy-paste)
+Appendix B: STATE.md template
+Appendix C: Prompt templates
+
+============================================================
+1. DECISIONS LOCKED
+============================================================
+
+| Topic            | Final decision                                              | Kyun |
+|------------------|-------------------------------------------------------------|------|
+| App type         | PWA (Android Chrome par install)                            | Ek codebase, store nahi chahiye |
+| Frontend         | Vanilla JS (ES modules), no build step, no framework        | Har AI model likh sakta hai, paste-friendly, tumhare Abhitools jaisa pattern |
+| UI               | Plain CSS (mobile-first), CSS variables, dark mode          | Tailwind/build ki zarurat nahi |
+| Backend          | Supabase (Postgres + Auth + RLS)                            | Free tier, SQL, secure |
+| Serverless       | Vercel /api functions (CommonJS, Node)                      | Sirf push, cron-tick, done-link, AI ke liye |
+| Auth             | Supabase email+password, signup BAND, user manually banao   | Single user |
+| Reminders        | Web Push (VAPID) + Supabase pg_cron har 5 min -> /api/cron/tick | Android par web push achha chalta hai; Vercel free cron bahut kam frequency deta hai (verify) |
+| Notification action | "Ho gaya" / "+250 ml" buttons, signed link se seedha complete | App kholne ki zarurat nahi |
+| AI (Phase 2)     | Server-side proxy, provider-agnostic, free-tier model        | Tumhare paas paid plan nahi |
+| Offline          | App shell cache. Offline writes Phase 3                      | Pehle online stable |
+| Backup           | JSON export (app me) + monthly manual + restore test         | Free plan par backup guarantee nahi (verify) |
+| Language (UI)    | Hinglish labels, ek file strings.js me                       | Badalna aasan |
+| Linking          | Task -> max 1 goal (+ optional 1 milestone)                  | Simple |
+| Habits vs tasks  | Alag: routines (daily) aur tasks (one-time)                  | UX alag hai, Today me saath dikhte hain |
+
+Language/format rule: ek AI chat me ek step. Ek file 300 line se chhoti.
+
+============================================================
+2. TUMHE KYA KARNA HAI (manual setup - AI ye nahi kar sakta)
+============================================================
+
+[ ] 1. GitHub me naya PRIVATE repo: goal-os
+[ ] 2. supabase.com par naya project (nearest region). Project URL aur anon key
+       note karo. service_role key ALAG sambhal ke rakho (kabhi chat/GitHub me nahi).
+[ ] 3. Supabase -> Authentication: public signup band karo ("Allow new users to
+       sign up" off). Phir Dashboard se apna ek user banao (email + strong password).
+[ ] 4. Vercel par repo import karo (auto deploy).
+[ ] 5. Computer/phone me VAPID keys banao:   npx web-push generate-vapid-keys
+       (Node chahiye. Ya AI se kaho Vercel/Node ke bina kaise banayein.)
+[ ] 6. Vercel Environment Variables (Section 10.6 ki list) daalo.
+[ ] 7. Ek strong random CRON_SECRET aur DONE_LINK_SECRET banao (40+ characters).
+[ ] 8. Android phone: Chrome me app kholo -> Install/Add to Home screen.
+       Settings -> Notifications ON. Battery optimization: Chrome/app ke liye
+       "Unrestricted" (nahi to reminders late aate hain).
+[ ] 9. Har step ke baad: GitHub par commit, Vercel deploy dekho, acceptance test chalao.
+
+============================================================
+3. ARCHITECTURE
+============================================================
+
+3.1 Overview
+
+  +-------------------+        HTTPS (anon key + user JWT)        +----------------------+
+  |  Android Chrome   | -----------------------------------------> |  Supabase            |
+  |  PWA (static JS)  | <----------------------------------------- |  Auth + Postgres+RLS |
+  |  Service Worker   |                                            +----------+-----------+
+  +---------+---------+                                                       ^
+            ^  push (web-push)                                                | service_role
+            |                                                                 | (server only)
+  +---------+---------+      POST /api/cron/tick (every 5 min)       +---------+-----------+
+  |  Push service     | <---------------------------------------------+  Vercel /api       |
+  |  (Google FCM)     |                                               |  (Node functions)  |
+  +-------------------+                                               +---------+----------+
+                                                                                ^
+                                          Supabase pg_cron + pg_net ------------+
+
+3.2 Data flow rules
+  - CRUD (tasks, goals, routines...): browser -> Supabase directly. Security RLS se.
+  - Server code (service_role) SIRF: reminder tick, push subscribe/send, signed
+    done-link, AI proxy. Baaki sab client se.
+  - service_role key browser me kabhi nahi.
+  - /api responses cache nahi hote. Service worker /api ko kabhi cache nahi karta.
+
+3.3 Why this design (short)
+  - Kam serverless code = kam bug = AI-generated code audit karna aasan.
+  - RLS database level par security deta hai, frontend bug se data leak nahi hota.
+  - Reminder engine server par hai kyunki browser band ho to bhi push chahiye.
+
+============================================================
+4. REPO STRUCTURE
+============================================================
+
+goal-os/
+  index.html
+  manifest.webmanifest
+  sw.js                          service worker (shell cache + push)
+  vercel.json
+  package.json                   dependency: web-push only (CommonJS, "type" mat likhna)
+  .gitignore                     .env, node_modules
+  assets/icons/                  icon-192.png, icon-512.png, icon-maskable-512.png
+  css/
+    base.css                     reset, variables, dark mode
+    components.css               buttons, cards, sheet, toast, chips
+    screens.css                  screen specific
+  js/
+    main.js                      boot: auth gate -> router
+    config.js                    SUPABASE_URL, SUPABASE_ANON_KEY, VAPID_PUBLIC_KEY
+    supa.js                      client singleton
+    auth.js
+    router.js                    hash router
+    store.js                     tiny state + subscribe
+    dates.js                     timezone helpers (Section 6)
+    ui.js                        h(), toast(), openSheet(), confirmDialog()
+    strings.js                   Hinglish labels
+    push.js                      enable/disable push in browser
+    vendor/supabase.js           pinned UMD build (download karke rakho)
+    data/                        data-access layer (Section 7.3)
+      settings.js areas.js goals.js milestones.js tasks.js inbox.js
+      routines.js logs.js dayplan.js reviews.js exporter.js
+    logic/
+      planner.js                 pure functions (no DOM, no network)
+      attention.js               overdue/stale rules
+    components/
+      bottom_nav.js routine_card.js water_card.js task_row.js
+      quick_add.js sheet_form.js empty_state.js
+    screens/
+      login.js today.js inbox.js tasks.js goals.js goal_detail.js
+      review_daily.js review_weekly.js routines_manage.js settings.js
+  api/
+    _lib/
+      admin.js                   supabase service client
+      auth.js                    verify cron secret / verify user JWT
+      time.js                    tz helpers (server copy)
+      tick_logic.js              pure: decide which reminders are due
+      push.js                    web-push send wrapper
+      sign.js                    HMAC sign/verify for done-links
+    cron/tick.js
+    push/subscribe.js
+    push/unsubscribe.js
+    push/test.js
+    done.js
+    ai/                          (Phase 2)
+  supabase/
+    migrations/0001_core.sql
+    migrations/0002_cron.sql
+    tests/rls_test.sql
+  docs/
+    PROJECT_BRIEF.md             (Appendix A)
+    STATE.md                     (Appendix B)
+    CONTRACTS.md                 (Section 7.3 copy)
+
+============================================================
+5. DATABASE - FULL SQL
+============================================================
+
+Supabase SQL Editor me chalao. Postgres 15+ assume kiya gaya hai (Supabase me hota hai).
+
+----- supabase/migrations/0001_core.sql -----
+
+-- Helper: updated_at trigger
+create or replace function public.touch_updated_at() returns trigger
+language plpgsql as $$
+begin new.updated_at = now(); return new; end $$;
+
+-- 1) Settings (ek row per user)
+create table public.user_settings (
+  user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  timezone text not null default 'Asia/Kolkata',
+  wake_time time not null default '06:30',
+  quiet_start time not null default '23:00',
+  quiet_end time not null default '06:00',
+  day_rollover_hour int not null default 4 check (day_rollover_hour between 0 and 8),
+  daily_workload_minutes int not null default 120 check (daily_workload_minutes between 15 and 720),
+  duty_prompt_time time not null default '06:45',
+  review_time time not null default '21:30',
+  max_reminders_per_day int not null default 8 check (max_reminders_per_day between 1 and 30),
+  push_enabled boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- 2) Life areas
+create table public.life_areas (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 80),
+  description text,
+  status text not null default 'active' check (status in ('active','archived')),
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (id, user_id)
+);
+
+-- 3) Goals
+create table public.goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  life_area_id uuid not null,
+  title text not null check (char_length(title) between 1 and 160),
+  reason text,
+  status text not null default 'active' check (status in ('active','paused','done','archived')),
+  target_date date,
+  review_date date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (id, user_id),
+  foreign key (life_area_id, user_id) references public.life_areas(id, user_id) on delete restrict
+);
+
+-- 4) Milestones
+create table public.milestones (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  goal_id uuid not null,
+  title text not null check (char_length(title) between 1 and 160),
+  description text,
+  status text not null default 'todo' check (status in ('todo','doing','done','dropped')),
+  seq int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (id, user_id),
+  foreign key (goal_id, user_id) references public.goals(id, user_id) on delete cascade
+);
+
+-- 5) Tasks
+create table public.tasks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  goal_id uuid,
+  milestone_id uuid,
+  parent_task_id uuid,
+  title text not null check (char_length(title) between 1 and 200),
+  next_action text,
+  status text not null default 'todo' check (status in ('todo','doing','done','paused','cancelled')),
+  est_minutes int check (est_minutes is null or est_minutes between 1 and 1440),
+  due_date date,
+  scheduled_date date,
+  completed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (id, user_id),
+  foreign key (goal_id, user_id) references public.goals(id, user_id) on delete set null (goal_id),
+  foreign key (milestone_id, user_id) references public.milestones(id, user_id) on delete set null (milestone_id),
+  foreign key (parent_task_id, user_id) references public.tasks(id, user_id) on delete set null (parent_task_id)
+);
+
+create or replace function public.tasks_check_links() returns trigger
+language plpgsql as $$
+begin
+  if new.milestone_id is not null then
+    if new.goal_id is null or not exists (
+      select 1 from public.milestones m where m.id = new.milestone_id and m.goal_id = new.goal_id
+    ) then
+      raise exception 'milestone does not belong to the given goal';
+    end if;
+  end if;
+  return new;
+end $$;
+create trigger trg_tasks_links before insert or update on public.tasks
+  for each row execute function public.tasks_check_links();
+
+-- 6) Inbox
+create table public.inbox_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  text text not null check (char_length(text) between 1 and 1000),
+  status text not null default 'new' check (status in ('new','processed','dropped')),
+  processed_task_id uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- 7) Day plans (aaj ka context: duty time, off day, main priority)
+create table public.day_plans (
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  plan_date date not null,
+  is_off boolean not null default false,
+  duty_start time,
+  minimum_day boolean not null default false,
+  main_task_id uuid,
+  locked boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, plan_date),
+  foreign key (main_task_id, user_id) references public.tasks(id, user_id) on delete set null (main_task_id)
+);
+
+-- 8) Routines (roz ke kaam: brush, bath, ready, paani)
+create table public.routines (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 80),
+  block text not null default 'anytime' check (block in ('morning','duty','evening','anytime')),
+  anchor_type text not null default 'clock' check (anchor_type in ('clock','wake','duty_start')),
+  clock_time time,
+  anchor_offset_min int not null default 0 check (anchor_offset_min between -600 and 600),
+  applies_on text not null default 'all' check (applies_on in ('all','duty_days','off_days')),
+  days_of_week int[] not null default '{1,2,3,4,5,6,7}',   -- ISO: 1=Mon..7=Sun
+  is_must boolean not null default false,                   -- Minimum Viable Day me dikhe
+  target_value int check (target_value is null or target_value > 0),   -- paani: 2500
+  step_value int check (step_value is null or step_value > 0),         -- paani: 250
+  unit text,                                                -- 'ml'
+  checkpoints jsonb,   -- [{"at":"11:00","min":750},{"at":"14:00","min":1500},{"at":"18:00","min":2000}]
+  active boolean not null default true,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (id, user_id),
+  check (anchor_type <> 'clock' or clock_time is not null or checkpoints is not null)
+);
+
+-- 9) Routine logs (har din ka record)
+create table public.routine_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  routine_id uuid not null,
+  log_date date not null,
+  status text not null check (status in ('partial','done','skipped')),
+  value int not null default 0 check (value >= 0),
+  completed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (routine_id, log_date),
+  foreign key (routine_id, user_id) references public.routines(id, user_id) on delete cascade
+);
+
+-- 10) Reminder dedupe log (server tick yahan likhta hai)
+create table public.reminder_sent (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  log_date date not null,
+  item_key text not null,          -- 'routine:<uuid>' | 'water:<uuid>:11:00' | 'duty_prompt' | 'review_prompt'
+  nudge_no int not null default 0,
+  batch_id uuid not null,          -- ek notification = ek batch
+  sent_at timestamptz not null default now(),
+  unique (user_id, log_date, item_key, nudge_no)
+);
+
+-- 11) Push subscriptions
+create table public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  user_agent text,
+  created_at timestamptz not null default now(),
+  last_ok_at timestamptz
+);
+
+-- 12) Reviews
+create table public.daily_reviews (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  review_date date not null,
+  completed_text text,
+  pending_text text,
+  surprise_text text,
+  change_tomorrow text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, review_date)
+);
+
+create table public.weekly_reviews (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  week_start date not null,
+  accomplishments text,
+  challenges text,
+  decisions text,
+  next_priorities text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, week_start)
+);
+
+-- Indexes
+create index on public.goals (user_id, status);
+create index on public.milestones (goal_id, seq);
+create index on public.tasks (user_id, status, scheduled_date);
+create index on public.tasks (user_id, due_date);
+create index on public.inbox_items (user_id, status, created_at);
+create index on public.routine_logs (user_id, log_date);
+create index on public.reminder_sent (user_id, log_date);
+
+-- updated_at triggers + RLS (sab tables par)
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'user_settings','life_areas','goals','milestones','tasks','inbox_items','day_plans',
+    'routines','routine_logs','reminder_sent','push_subscriptions','daily_reviews','weekly_reviews'
+  ] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format(
+      'create policy %I on public.%I for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid())',
+      t || '_owner', t);
+  end loop;
+  foreach t in array array[
+    'user_settings','life_areas','goals','milestones','tasks','inbox_items','day_plans',
+    'routines','routine_logs','daily_reviews','weekly_reviews'
+  ] loop
+    execute format('create trigger %I before update on public.%I for each row execute function public.touch_updated_at()',
+      'trg_touch_' || t, t);
+  end loop;
+end $$;
+
+-- Table permissions (RLS ke saath dono zaruri)
+revoke all on all tables in schema public from anon;
+alter default privileges in schema public revoke all on tables from anon;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+
+NOTE: "on delete set null (column)" syntax PG15+ me hai. Agar error aaye to
+AI se kaho is line ko trigger-based alternative se badle.
+
+Pehli baar login ke baad client user_settings ki row upsert karega (defaults).
+
+----- supabase/migrations/0002_cron.sql -----
+(Step S4 me chalana; YOUR-APP aur secret badlo. Extensions: Dashboard ->
+Database -> Extensions me pg_cron aur pg_net enable karo.)
+
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+select cron.schedule('goalos-tick', '*/5 * * * *', $$
+  select net.http_post(
+    url := 'https://YOUR-APP.vercel.app/api/cron/tick',
+    headers := jsonb_build_object(
+      'Content-Type','application/json',
+      'Authorization','Bearer YOUR_CRON_SECRET'),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 20000
+  );
+$$);
+
+-- Debug:
+--   select * from cron.job_run_details order by start_time desc limit 10;
+-- Band karna:
+--   select cron.unschedule('goalos-tick');
+
+(Agar pg_cron/pg_net me dikkat aaye: fallback = koi free external cron service
+jo har 5 min URL hit kare, header me Authorization bhej sake. Current options verify karo.)
+
+----- supabase/tests/rls_test.sql -----
+Purpose: confirm karo ki ek user doosre ka data nahi dekh sakta.
+1) Dashboard me doosra test user banao (baad me delete kar do).
+2) Dono user ids note karo (A = tumhara, B = test).
+3) SQL editor me:
+
+  begin;
+  set local role authenticated;
+  select set_config('request.jwt.claims', '{"sub":"<USER_B_ID>","role":"authenticated"}', true);
+  select count(*) from public.tasks;            -- 0 aana chahiye (B ka koi task nahi)
+  insert into public.life_areas(name, user_id) values ('x','<USER_A_ID>');   -- ERROR aana chahiye
+  rollback;
+
+4) Anon test: browser se bina login ke supabase REST par tasks fetch karo -> empty/401/permission denied.
+5) Cross-ownership: B ke naam se A ka goal_id wala task insert karne ki koshish -> FK error.
+
+============================================================
+6. DATE / TIME RULES (ye galat hua to reminders aur "aaj" dono galat)
+============================================================
+
+R1. DB me: date columns = LOCAL date (timezone: settings.timezone, default Asia/Kolkata).
+        Timestamps = timestamptz (UTC me store).
+R2. "Aaj" ka matlab: local time me (now - day_rollover_hour). Agar abhi 02:30 hai
+    aur rollover=4 to "aaj" = kal ki date (raat ki duty ke liye). Default 4.
+R3. Client function (js/dates.js):
+      todayLocal(tz, rolloverHour) -> 'YYYY-MM-DD'
+      nowMinutes(tz) -> int (0..1439), minutes since local midnight
+      addDays('YYYY-MM-DD', n) -> 'YYYY-MM-DD'
+      isoDow('YYYY-MM-DD') -> 1..7 (Mon=1)
+      formatTime('HH:MM') etc.
+    Implement Intl.DateTimeFormat(timeZone=...) se. Date.toISOString().slice(0,10)
+    SE KABHI "aaj" mat nikalo (UTC bug).
+R4. Server me wahi logic /api/_lib/time.js me (same function names).
+R5. Routine due time:
+      anchor 'clock'      -> clock_time + offset
+      anchor 'wake'       -> settings.wake_time + offset
+      anchor 'duty_start' -> day_plans.duty_start + offset (offset negative, e.g. -90)
+                              duty_start null ho to due=None (reminder nahi; duty_prompt jayega)
+R6. Quiet hours (quiet_start..quiet_end) midnight cross kar sakte hain (23:00..06:00).
+    Quiet me koi push nahi.
+
+============================================================
+7. FRONTEND ARCHITECTURE
+============================================================
+
+7.1 Boot flow
+  index.html -> loads vendor/supabase.js (classic script) -> js/main.js (module)
+  main.js: init supa -> get session -> if none: show login screen
+           else: ensure user_settings row -> register SW -> start router.
+
+7.2 Core rules (AI ko ye follow karwana hai)
+  - Koi framework nahi. ES modules. Har screen: export function mount(root, params) -> returns unmount().
+  - DOM bante samay user text ke liye textContent use karo, innerHTML NAHI (XSS).
+  - Sab text strings.js se.
+  - Data access sirf js/data/*.js se; screens direct supabase call nahi karte.
+  - Har data function: { data, error } pattern nahi, balki throw Error(msg); screen catch karke toast dikhaye.
+  - Optimistic update jahan 1-tap (routine tick, water +): UI turant, fail par rollback + toast.
+  - Loading state aur empty state har screen par.
+  - Touch target min 44px. Input font-size 16px (zoom nahi hoga). Bottom nav safe-area ke saath.
+  - Console me secrets/log nahi.
+
+7.3 Data layer contracts (CONTRACTS.md)
+  (Har function async hai. user_id kabhi client se nahi bhejna - DB default auth.uid() deta hai.)
+
+  settings.js
+    getSettings() -> settings row (nahi mili to default ke saath upsert karke)
+    updateSettings(patch)
+  areas.js
+    listAreas({includeArchived=false}) / createArea({name, description}) / updateArea(id, patch) / archiveArea(id)
+  goals.js
+    listGoals({status, areaId}) / getGoal(id) / createGoal({life_area_id, title, reason, target_date, review_date})
+    updateGoal(id, patch) / setGoalStatus(id, status)
+  milestones.js
+    listMilestones(goalId) / createMilestone({goal_id, title, description, seq}) / updateMilestone(id, patch)
+    reorderMilestones(goalId, orderedIds)
+  tasks.js
+    listTasks({status[], scheduledDate, dueBefore, goalId, milestoneId, noDate})
+    createTask({title, next_action, goal_id, milestone_id, est_minutes, due_date, scheduled_date, parent_task_id})
+    updateTask(id, patch) / completeTask(id) (status done + completed_at=now)
+    reopenTask(id) / rescheduleTask(id, date) / pauseTask(id) / cancelTask(id)
+    splitTask(id, [titles]) -> parent ko 'paused' ya 'done' nahi; naye child tasks banata hai, parent 'cancelled' (user choice param)
+  inbox.js
+    listInbox({status='new'}) / addInbox(text) / dropInbox(id)
+    convertInboxToTask(id, taskFields) -> task banao + inbox processed
+  routines.js
+    listRoutines({activeOnly=true}) / createRoutine(obj) / updateRoutine(id, patch) / deactivateRoutine(id)
+  logs.js
+    getLogs(date) -> Map routine_id -> log
+    setRoutineDone(routineId, date)          (upsert status done)
+    undoRoutine(routineId, date)             (row delete)
+    skipRoutine(routineId, date)
+    addValue(routineId, date, delta)         (paani: value += delta; >= target => done else partial; 0 => delete)
+  dayplan.js
+    getDayPlan(date) / upsertDayPlan(date, patch) (is_off, duty_start, minimum_day, main_task_id, locked)
+  reviews.js
+    getDailyReview(date) / saveDailyReview(date, obj) / getWeeklyReview(weekStart) / saveWeeklyReview(weekStart, obj)
+  exporter.js
+    exportAll() -> JSON object { app:'goal-os', version:1, exported_at, tables:{...} }
+    downloadExport() -> file download trigger
+    validateImport(obj) -> {ok, errors[]}   (Step S9)
+    importAll(obj, {mode:'merge'|'replace-empty'})
+
+7.4 Service worker (sw.js) - requirements
+  - Cache name 'goalos-shell-vN'. Install: precache index.html, css, js (list), icons, offline fallback.
+  - Fetch: GET + same-origin + path NOT starting with /api -> stale-while-revalidate for shell files.
+    Supabase (cross-origin) aur /api ko bilkul touch nahi (cache nahi).
+  - Activate: purane caches delete.
+  - Update flow: naya SW mile to app me toast "Naya version - refresh karo".
+  - push event: payload JSON {title, body, tag, url, actions:[{action,title}], data:{token...}}
+      -> showNotification(title, {body, tag, data, actions, icon, badge, requireInteraction:false})
+  - notificationclick:
+      * action 'done' / 'water' : fetch('/api/done', POST, body=data.token) -> phir notification close;
+        success par chhota confirm notification (optional); fail par app khol do
+      * default click: clients.openWindow(data.url || '/#/today') ya existing window focus
+  - Version bump rule: jab bhi shell file badle, cache version badlo (nahi to purana UI dikhega).
+
+7.5 manifest.webmanifest
+  name 'Goal OS', short_name 'GoalOS', start_url '/#/today', display 'standalone',
+  theme/background color, icons 192/512 + maskable 512.
+
+============================================================
+8. SCREENS SPEC (mobile-first, bottom nav: Aaj | Inbox | Tasks | Goals | Settings)
+============================================================
+
+8.1 Today (sabse important)
+  Header: aaj ki date, duty chip ("Duty 08:00" tap karke badlo / "Off day" toggle),
+          "Minimum Day" toggle.
+  Sections (upar se neeche):
+    a) Needs Attention banner (agar kuch hai) -> tap par Attention sheet.
+    b) Main Priority card (ek task; "Chuno" button agar nahi hai; "Suggest" planner v1 se).
+    c) Routines block-wise: Morning / Duty / Evening / Anytime.
+       Har row: checkbox (44px), title, due time chip, long-press/menu: Skip.
+       Minimum Day ON ho to sirf is_must dikhao.
+    d) Water card: progress (1500/2500 ml), buttons [+250] [+500] [Undo].
+    e) Aaj ke tasks (scheduled_date = aaj ya due <= aaj), est time total chip.
+    f) Evening me "Daily review karo" button.
+  Floating "+" -> Quick Add sheet (text box, Enter = inbox me save). 5 second me capture.
+
+8.2 Inbox
+  Cards: text, time. Actions: "Task banao" (sheet: title, next action, goal, est, date), "Delete".
+  Process complete hone par item processed.
+
+8.3 Tasks
+  Tabs: Aaj | Aane wale | Bina date | Done. Row: title, goal chip, due chip, est.
+  Row actions: Complete, Reschedule(date), Split, Pause, Cancel. Done tab me Reopen.
+
+8.4 Goals
+  Life area ke hisaab se grouped goals list. Goal card: title, status, review date, next action chip.
+  Goal Detail: reason, target/review date, milestones (order), tasks list,
+  "Next action jodo" -> task banao jo milestone se linked ho.
+  Task quality hint: next_action field ke neeche chhota text:
+  "Kya tum bina aur planning ke ye shuru kar sakte ho?"
+  Active goals soft limit: 5 se zyada par gentle warning (block nahi).
+
+8.5 Daily Review (sheet/screen)
+  Auto-fill: aaj kya complete hua (routines + tasks).
+  Pending tasks par har ek ke liye 4 buttons: Baad me (kal) / Reschedule / Chhota karo (split) / Cancel.
+  3 sawal: kuch unexpected hua? kal kya badalna hai? (optional notes). Target 2-3 min.
+
+8.6 Weekly Review (sheet/screen)
+  Steps: (1) Is hafte complete (auto count) (2) Active goals + review_date aaj/pass wale
+  (3) Kaun si life area ko time mila (count) (4) Pause/archive suggestion list
+  (5) Agle hafte ki 3 priorities (text). Save weekly_reviews.
+
+8.7 Routines Manage (Settings se)
+  List + add/edit: title, block, anchor type, time/offset, applies_on (all/duty/off),
+  days, is_must, water type (target/step/unit/checkpoints). Reorder (up/down buttons, drag nahi).
+
+8.8 Settings
+  Timezone, wake time, quiet hours, duty prompt time, review time, max reminders/day,
+  workload minutes, rollover hour. Push: Enable / Disable / "Test notification".
+  Export JSON, Logout, App version. "Reminders kyun late?" help text (battery optimization).
+
+8.9 Re-entry (gap ke baad)
+  Agar last_open > 3 din: ek screen "Wapas swagat. Aaj se fresh start."
+  Button: "Purane overdue tasks (N) archive/cancel karo" (1 click) ya "Review karo".
+  Koi guilt text nahi, koi streak nahi.
+
+============================================================
+9. BUSINESS LOGIC (js/logic/planner.js - pure functions, testable)
+============================================================
+
+9.1 Needs Attention (attention.js)
+  - Overdue task: due_date < today, status todo/doing.
+  - Stale: overdue >= 14 din -> "outdated ho sakta hai, review karo" (auto priority NAHI).
+  - Due soon: due within 2 days.
+  - Inbox: new items jo 2 din se purane.
+  - Goal review due: review_date <= today.
+
+9.2 suggestMainPriority(tasks, today) -> task
+  score = urgency + goalBonus + shortBonus
+    urgency: due today 100; tomorrow 70; <=3 days 50; <=7 days 25; overdue(<14d) 90; stale 10; no date 0
+    goalBonus: +10 agar goal status active
+    shortBonus: est <= 30 min => +5 (tie-breaker)
+  Highest score. Tie: chhota est_minutes.
+
+9.3 suggestDayTasks(tasks, availableMinutes, today)
+  budget = availableMinutes * 0.8   (20% buffer)
+  Main priority pehle, phir score order me jab tak sum(est_minutes||30) <= budget.
+  Har goal ke liye daily task zaruri nahi.
+
+9.4 Minimum Viable Day
+  minimum_day = true => Today screen par: sirf is_must routines + Main Priority + (optional) 1 aur task.
+  Reminders me bhi sirf is_must wale routines (tick_logic me is_must filter).
+
+9.5 Water logic
+  value += step. status: value >= target => 'done'; value > 0 => 'partial'; value == 0 => row delete.
+  Checkpoint reminder: agar abhi ka time checkpoint.at se upar aur value < checkpoint.min.
+
+9.6 Pending task flow (daily review)
+  Baad me = scheduled_date = kal. Reschedule = date picker. Split = 2-3 chhote titles daalo.
+  Cancel = status cancelled. Isse endless rescheduling nahi hoti.
+  Ek task 3 baar reschedule ho to hint: "Ise chhota karo ya cancel karo?" (reschedule_count
+  column zaruri nahi - Phase 3; abhi optional).
+
+============================================================
+10. BACKEND API + REMINDER ENGINE
+============================================================
+
+10.1 Common (api/_lib)
+  admin.js: createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {auth:{persistSession:false}})
+  auth.js:
+    requireCron(req): header Authorization == 'Bearer ' + CRON_SECRET (crypto.timingSafeEqual). Warna 401.
+    requireUser(req): Bearer user JWT -> admin.auth.getUser(token) -> user. Warna 401.
+  Sab responses: Cache-Control: no-store. Sirf expected methods allow (else 405).
+  Error me internal details client ko nahi.
+
+10.2 POST /api/push/subscribe   (user JWT)
+  body {endpoint, keys:{p256dh, auth}, userAgent} -> upsert push_subscriptions (user_id = user.id).
+10.3 POST /api/push/unsubscribe (user JWT) body {endpoint} -> delete.
+10.4 POST /api/push/test        (user JWT) -> user ke sab subscriptions ko test push.
+
+10.5 POST /api/cron/tick   (cron secret)  <- reminder engine
+  For each user_settings where push_enabled:
+   1. local = toLocal(now, tz): date (rollover ke saath), nowMin, isoDow.
+   2. Agar nowMin quiet hours me: skip user.
+   3. Load: day_plan(date), routines(active), routine_logs(date), reminder_sent(date),
+      daily_review(date), push_subscriptions. (Kam queries: parallel)
+   4. Items banao (tick_logic.js, pure function):
+      a) Routine item: applies today? (days_of_week has dow; applies_on vs is_off;
+         minimum_day => sirf is_must). dueMin Section 6.R5 se.
+         Complete (done/skipped) to skip.
+         key = 'routine:<id>'.
+      b) Water/checkpoint item: har checkpoint ke liye key 'water:<id>:<at>'.
+         Due agar nowMin >= at aur logged value < min.
+      c) duty_prompt: agar nowMin >= duty_prompt_time, day_plan me duty_start null aur
+         is_off false, aur routines me koi duty_start-anchored hai.
+      d) review_prompt: nowMin >= review_time aur daily_review nahi.
+   5. Due window: dueMin <= nowMin < dueMin + 90.
+      Nudge rule: nudge_no 0 first time; nudge_no 1 tab jab pichla nudge >= 25 min purana.
+      Max 2 nudges per item.
+   6. Cap: aaj ke distinct batch_id count >= max_reminders_per_day => kuch nahi bhejo.
+   7. Due items ko ek hi digest notification me jodo:
+        1 item -> title: item ka naam, body: chhota nudge
+        2+ items -> title: "N kaam baaki", body: "brush, bath, ..."
+      Action buttons: sirf single boolean routine par "Ho gaya"; water par "+250 ml".
+   8. Idempotency: pehle reminder_sent rows insert karo (unique constraint,
+      on conflict do nothing). Jo rows actually insert hue unhi ke liye push bhejo.
+   9. web-push send (urgency 'high', TTL 3600). 404/410 => subscription delete.
+      Success => last_ok_at update.
+   10. Response: {users, sent, skipped} (koi personal data nahi).
+
+10.6 POST /api/done   (signed token, user JWT nahi)
+  Token (notification payload me): {uid, rid, date, act:'done'|'water', exp, sig}
+  sig = HMAC_SHA256(DONE_LINK_SECRET, uid|rid|date|act|exp) hex.
+  Server: exp check (6 ghante), sig timingSafeEqual, phir service role se:
+    act 'done'  -> routine_logs upsert (done)
+    act 'water' -> value += routine.step_value (cap target), status partial/done
+  Idempotent. 'done' dubara chalne par bhi safe. Rate limit: simple (same token 20 baar se zyada nahi - optional).
+
+10.7 Env variables (Vercel)
+  SUPABASE_URL
+  SUPABASE_SERVICE_ROLE_KEY     (secret)
+  VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (secret), VAPID_SUBJECT (mailto:tumhari-email)
+  CRON_SECRET                   (secret)
+  DONE_LINK_SECRET              (secret)
+  APP_URL                       (https://....vercel.app)
+  AI_PROVIDER, AI_API_KEY       (Phase 2)
+  Frontend config.js me sirf public cheezen: SUPABASE_URL, ANON key, VAPID_PUBLIC_KEY.
+
+10.8 Android reminder reliability notes
+  - Chrome me notification permission allow; PWA install karo.
+  - Battery optimization: Unrestricted.
+  - Do Not Disturb me notifications silent ho sakte hain - app quiet hours alag hai.
+  - Reminders "exact minute" nahi: tick har 5 min, to +0 se +5 min delay normal hai.
+
+============================================================
+11. SECURITY CHECKLIST
+============================================================
+
+[ ] Signup band, sirf tumhara user
+[ ] RLS sab tables par + rls_test.sql pass
+[ ] service_role key sirf Vercel env me, repo/browser/chat me kabhi nahi
+[ ] .env gitignore me; repo private
+[ ] /api/cron/* aur /api/done: secrets + timingSafeEqual
+[ ] /api responses no-store; SW /api cache nahi karta
+[ ] innerHTML me user text kabhi nahi (XSS)
+[ ] Vercel headers (vercel.json): Content-Security-Policy (script-src 'self'; connect-src
+    'self' https://*.supabase.co), X-Content-Type-Options nosniff, Referrer-Policy no-referrer,
+    X-Frame-Options DENY
+[ ] Destructive actions par confirm dialog (delete, replace-import)
+[ ] Import se pehle validation; replace mode sirf khali account par
+[ ] Supabase password strong; email recovery safe
+[ ] Dependencies kam (web-push + supabase vendor); version pin
+[ ] Har AI-generated api file ko "security review prompt" (Appendix C) se doosre AI se check karwao
+
+============================================================
+12. BUILD STEPS (S0 - S10)
+============================================================
+Format: Goal | Files | AI ko kya do | Acceptance test (pass hone par hi aage)
+
+S0 - Project setup
+  Goal: repo, docs, deploy pipeline.
+  Files: docs/PROJECT_BRIEF.md, STATE.md, CONTRACTS.md, .gitignore, vercel.json (basic), package.json.
+  Test: Vercel par "Hello" page dikhta hai; docs repo me hain.
+
+S1 - Database
+  Goal: Section 5 ka 0001_core.sql chalana.
+  AI ko do: SQL + "isme errors check karo, Supabase PG version ke hisaab se".
+  Test: Table Editor me 13 tables; rls_test.sql ke sabhi checks pass.
+
+S2 - PWA shell + auth
+  Files: index.html, manifest, sw.js (shell cache only), css/*, js/main.js, config.js, supa.js, auth.js,
+         router.js, store.js, ui.js, strings.js, screens/login.js, components/bottom_nav.js
+  Test: Login chalta hai; galat password par error toast; logout; refresh par session rehta hai;
+        Android Chrome par "Install app" aata hai; offline me shell khulta hai (data nahi).
+
+S3 - Today + Routines (core value)
+  Files: dates.js, data/settings.js, routines.js, logs.js, dayplan.js, screens/today.js, routines_manage.js,
+         components/routine_card.js, water_card.js, screens/settings.js (basic)
+  Test:
+    - Routine banao (brush, bath, ready: duty_start -90, paani 2500/250).
+    - Today par tick -> turant UI badle, refresh par bhi rahe.
+    - Water +250 x10 => done. Undo kaam kare.
+    - Duty time set -> chip dikhe. Off day toggle -> applies_on routines badlen.
+    - Minimum Day ON -> sirf is_must dikhe.
+    - Raat 2 baje (ya rollover test) "aaj" sahi date de (dates.js unit checks).
+
+S4 - Push infrastructure
+  Files: sw.js (push + click), js/push.js, api/_lib/{admin,auth,push}.js, api/push/{subscribe,unsubscribe,test}.js,
+         supabase/migrations/0002_cron.sql (abhi sirf extensions, schedule S5 ke baad)
+  Test: Settings me "Enable notifications" -> permission -> subscription DB me; "Test notification"
+        se Android par notification aaye (app band hone par bhi).
+
+S5 - Reminder engine
+  Files: api/_lib/{time,tick_logic,sign}.js, api/cron/tick.js, api/done.js
+  Test:
+    - tick_logic ke pure unit tests (node script): due calc, quiet hours, window, nudge, cap, digest.
+    - Manual curl se /api/cron/tick (secret ke saath) -> sahi reminders.
+    - Ek routine ka time 2 min aage rakho -> notification aaye -> "Ho gaya" button dabao ->
+      app kholne par tick dikhe.
+    - Wahi reminder dobara na aaye (idempotent).
+    - pg_cron schedule on karo; 15 min me automatic reminders aate hain.
+    - Quiet hours me kuch nahi aaya.
+
+S6 - Inbox + Tasks + Attention
+  Files: data/inbox.js, tasks.js, logic/attention.js, screens/inbox.js, tasks.js, components/quick_add.js, task_row.js
+  Test: Quick add 5 second me; inbox->task; task complete/reschedule/split/cancel;
+        overdue banner; stale (14+ din) alag dikhe; Today me aaj ke tasks.
+
+S7 - Goals engine
+  Files: data/areas.js, goals.js, milestones.js, logic/planner.js, screens/goals.js, goal_detail.js, sheet_form.js
+  Test: Area -> Goal -> Milestone -> task link; milestone-goal mismatch par DB error;
+        Main Priority suggest; Next action goal card par; active goals >5 warning.
+
+S8 - Reviews
+  Files: data/reviews.js, screens/review_daily.js, review_weekly.js, re-entry screen
+  Test: Daily review pending options chalte hain; weekly save; 4 din gap simulate -> re-entry screen.
+
+S9 - Export / Import / Hardening
+  Files: data/exporter.js, vercel.json headers, settings export button
+  Test: Export file download; import validation galat file reject kare; khali test project me
+        restore karke counts match (RESTORE TEST - zaruri). CSP lagne ke baad app kaam kare.
+
+S10 - Polish
+  Dark mode, a11y (labels, contrast), loading skeletons, error boundaries, SW update toast,
+  small perf (parallel fetch), icon/splash.
+  Test: Lighthouse PWA check; 1 hafte daily use me koi data-loss/duplicate nahi.
+
+============================================================
+13. PHASE 2 - AI (free-tier)
+============================================================
+
+13.1 Principles
+  - Core app AI ke bina poora chalta hai.
+  - AI sirf DRAFT/suggestion deta hai. Save tabhi jab tum "Accept" dabao.
+  - Output hamesha strict JSON; server validate kare; galat ho to error, retry nahi loop.
+  - AI kabhi dates/goals/archive khud nahi badalta.
+  - Health/finance par info + options, final authority nahi.
+  - Desire "real/fake" judge nahi karna; philosophical prompts optional + user-triggered.
+
+13.2 Provider adapter
+  api/ai/_provider.js: askModel({system, user, schema}) -> parsed JSON.
+  Provider env AI_PROVIDER se (free-tier API wala koi bhi; current free limits verify karo).
+  Timeout 20s, max tokens limit, simple per-day call cap (DB counter) taaki limit na tute.
+
+13.3 Migration 0003: ai_suggestions
+  id, user_id, kind ('inbox_clarify'|'goal_breakdown'|'task_split'|'if_then'),
+  input_ref (uuid/text), payload jsonb, status ('pending'|'accepted'|'rejected'),
+  created_at. RLS same pattern.
+
+13.4 Features (is order me)
+  P2.1 Inbox clarify: raw text -> {title, next_action, est_minutes, suggested_goal_id|null}
+  P2.2 Task split: bada task -> 2-4 chhote steps (task quality test ke saath)
+  P2.3 Goal breakdown: goal -> clarify questions (<=3) -> outcome -> 3-5 milestones -> pehla next action
+  P2.4 If-then plan: task ke liye "Agar <situation> to <action>" suggestion
+  P2.5 Daily recommendation EXPLANATION: planner.js (rule-based) ka result AI se sirf samjhwana,
+       decide planner.js karta hai.
+
+13.5 AI prompt safety
+  - Prompt me user data minimum bhejo (sirf zaruri fields).
+  - System prompt: "Output JSON only. Unrealistic mat banao. Estimate conservative."
+  - UI me label: "AI draft - tum edit/accept karo".
+
+============================================================
+14. PHASE 3+ (baad me, jab zarurat lage)
+============================================================
+  - Recurring one-time tasks (task_templates + generated instances)
+  - Offline write queue (Today checklist offline tick -> sync)
+  - Reminder analytics (kaun se time par ignore hota hai -> time shift suggest)
+  - Knowledge notes linked to goals
+  - Focus timer (optional Pomodoro, 25 min fixed nahi)
+  - Reflection mode (optional prompts; alag screen; kabhi required nahi)
+  - Streak NAHI. Life Score NAHI.
+  - Local-only private reflections option
+
+============================================================
+15. FREE AI MODELS KE SAATH KAISE BUILD KARNA HAI
+============================================================
+
+Samasya: free AI chats me context chhota hota hai, limit khatam hoti hai,
+aur alag-alag model alag style me code likhte hain. Isliye:
+
+15.1 Golden rules
+  1. Ek chat = ek step (ya step ka ek hissa). Chat lamba mat kheencho.
+  2. Har chat ki shuruaat: PROJECT_BRIEF (Appendix A) + CONTRACTS (Section 7.3)
+     + sirf wo files jo us step me chahiye.
+  3. AI se hamesha COMPLETE file maango (patch/snippet nahi), file ka path likhwa ke.
+  4. "Jo file nahi maangi use mat chhedo" - prompt me likho.
+  5. Har step ke baad: git commit -> Vercel deploy -> acceptance test -> STATE.md update.
+  6. Limit khatam ho to naya chat/model: Brief + STATE.md + current file paste karo, wahin se continue.
+  7. Bada bug aaye to: error message + file + "pehle root cause batao, phir fix" prompt.
+
+15.2 Kaun sa kaam kis par (guideline, free models ki quality badalti rehti hai)
+  | Kaam                                         | Behtar choice                          |
+  |----------------------------------------------|----------------------------------------|
+  | SQL/RLS, security, api/ push+cron, tick_logic| Sabse strong model (jaise Claude)      |
+  | Screens/CSS/UI polish                        | Koi bhi achha free model               |
+  | Unit tests, boilerplate, data/*.js           | Koi bhi free model                     |
+  | Code review / bug-hunt                       | DOOSRA model (alag nazar)              |
+  Rule: Jo code security ya reminders se judta hai use hamesha DO alag AI se review karwao.
+
+15.3 Quality guard (AI ki aam galtiyan)
+  - Hallucinated API/library: sirf allowed deps (web-push, supabase UMD). Naya package mat jodo.
+  - UTC bug: "aaj" nikalne me toISOString use na kare (Section 6).
+  - innerHTML me user text.
+  - user_id client se bhejna / service_role frontend me.
+  - SW me API cache karna.
+  - Bahut bada single file. Limit 300 lines.
+  Har output par ye 6 cheezen khud grep/check karo.
+
+15.4 Debugging routine
+  1. Chrome (phone) me remote debugging ya laptop par DevTools Console.
+  2. Network tab: Supabase request ka error body.
+  3. Supabase Dashboard -> Logs.
+  4. Vercel -> Functions logs.
+  5. Ye sab AI ko paste karo (secrets hata ke).
+
+15.5 Git habit
+  - Har step ek branch ya kam se kam ek commit: "S3: today + routines".
+  - Kaam karta version tag: v0.3-s3-ok. Kharab ho to wapas jao.
+
+============================================================
+16. TESTING, BACKUP, RESTORE
+============================================================
+
+16.1 Tests (heavy framework nahi)
+  - Pure functions (dates.js, planner.js, attention.js, tick_logic.js): simple Node scripts
+    (tests/*.test.js, node:test built-in). AI se test cases likhwao: edge cases = midnight,
+    rollover, quiet hours midnight-cross, duty_start null, water checkpoints.
+  - Manual checklist: har step ka Acceptance test.
+  - RLS: rls_test.sql.
+
+16.2 Backup
+  - App me Export JSON. Mahine me ek baar + bade changes ke baad.
+  - File ko 2 jagah rakho (phone + Drive/laptop).
+  - Supabase free plan: automatic downloadable backup par bharosa mat karo (current docs verify).
+  - Free project lambe inactivity par pause ho sakta hai (verify) - roz use se issue nahi.
+
+16.3 Restore test (S9 me ek baar, phir har 3 mahine)
+  1. Naya khali Supabase project (ya test user).
+  2. Migrations chalao.
+  3. Import file (validation ke baad).
+  4. Counts compare: har table ki row count export se match.
+  5. Duplicate nahi bane (import idempotent / ids preserve).
+
+============================================================
+17. DEPLOYMENT + ANDROID SETUP
+============================================================
+
+  1. GitHub push -> Vercel auto deploy.
+  2. Vercel env vars (10.7).
+  3. Supabase Authentication -> URL configuration: Site URL = APP_URL.
+  4. SQL: 0001 (S1), 0002 cron (S4/S5).
+  5. Phone: Chrome -> app URL -> menu -> "Install app".
+  6. Phone Settings -> Apps -> Chrome/GoalOS -> Notifications ON, Battery: Unrestricted.
+  7. App Settings -> Enable notifications -> Test.
+  8. Custom domain optional.
+  9. Naya SW release par cache version badlo.
+
+============================================================
+APPENDIX A - PROJECT_BRIEF (har AI chat me paste karo)
+============================================================
+
+PROJECT: Goal OS - single-user personal PWA for daily routines + goals + tasks + reviews.
+USER: Abhishek (Android). UI language Hinglish; code comments English.
+MAIN PURPOSE: routine adherence (brush, bath, ready for duty, water 2.5L) via reminders, then
+goal->milestone->next action->today->review pipeline. App must work WITHOUT AI.
+
+STACK (fixed, do not change or add frameworks):
+- Frontend: Vanilla JS ES modules, no build step, plain CSS, hash router.
+- Backend: Supabase (Postgres + Auth + RLS), supabase-js UMD vendored at js/vendor/supabase.js.
+- Serverless: Vercel /api (CommonJS, Node). Only dependency: web-push.
+- Reminders: Web Push (VAPID) + Supabase pg_cron every 5 min -> POST /api/cron/tick.
+- PWA: manifest + sw.js (shell cache; never cache /api or Supabase).
+
+HARD RULES:
+1. Output COMPLETE files with exact path headers. Do not touch files I did not ask for.
+2. Each file < 300 lines. No new dependencies.
+3. Never use innerHTML with user text (use textContent / h() helper).
+4. Never send user_id from client (DB default auth.uid()). Never put service_role key in frontend.
+5. "Today" must be computed with timezone + rollover hour (dates.js), NEVER toISOString().slice(0,10).
+6. Data access only via js/data/*.js using the contracts in CONTRACTS.md; screens never call supabase directly.
+7. Data functions throw Error on failure; screens catch and show toast.
+8. Mobile-first: touch targets >= 44px, input font-size 16px, safe-area padding.
+9. All UI text from js/strings.js (Hinglish).
+10. /api: validate method, no-store cache header, verify cron secret / user JWT / signed token as spec'd.
+11. Core features work without AI. AI only drafts; user accepts.
+12. Explain briefly what you changed and how to test it. If unsure about a spec, ask ONE question.
+
+DB: see supabase/migrations/0001_core.sql (paste if needed). Tables: user_settings, life_areas, goals,
+milestones, tasks, inbox_items, day_plans, routines, routine_logs, reminder_sent, push_subscriptions,
+daily_reviews, weekly_reviews. All have user_id + RLS owner policy; composite FKs (id,user_id).
+
+CURRENT STEP: <S?>   (state: see STATE.md)
+
+============================================================
+APPENDIX B - STATE.md TEMPLATE
+============================================================
+
+# STATE
+Last updated: <date>
+## Done steps
+- S0 ok (commit abc123)
+- S1 ok ...
+## Current step
+S3 - Today + Routines. Done: routines CRUD. Pending: water card, minimum day toggle.
+## Known bugs
+- (none) / list
+## Decisions made during build (spec se alag)
+- e.g. "applies_on 'duty_days' ka matlab: is_off=false"
+## Env/Infra notes
+- Vercel URL: ... ; cron schedule: on/off ; VAPID set: yes/no
+## Next 3 actions
+1. ...
+(Secrets kabhi yahan mat likho.)
+
+============================================================
+APPENDIX C - PROMPT TEMPLATES
+============================================================
+
+C1. Step build prompt
+-----
+[PROJECT_BRIEF paste]
+[CONTRACTS paste]
+[STATE.md paste]
+Aaj ka kaam: Step <S?> - <title>.
+Is step ka spec (neeche paste): <section 8/9/10 ka relevant hissa>
+Files banao (complete, path ke saath): <list>
+Existing files jo tumhe chahiye (read-only context): <paste>
+Acceptance test: <paste>
+Rules: brief ke HARD RULES follow karo. Aur kuch change mat karo.
+Output ke end me: (1) kya banaya (2) kaise test karun (3) koi assumption.
+-----
+
+C2. Bug fix prompt
+-----
+[BRIEF] + file paste.
+Bug: <kya hua>, expected: <kya hona chahiye>.
+Error/console/network: <paste, secrets hata ke>.
+Pehle root cause batao (2-3 line), phir sirf zaruri file ka COMPLETE fixed version do.
+-----
+
+C3. Security/code review prompt (doosre AI se)
+-----
+Tum ek strict security + correctness reviewer ho. Files: <paste>.
+Check karo: RLS/ownership bypass, secret leak, XSS (innerHTML), timezone/UTC bug,
+duplicate reminder (idempotency), unauthenticated endpoints, missing method/validation,
+caching of private data, race conditions. Har issue: severity, file:line, fix. Style comments mat do.
+-----
+
+C4. Handoff prompt (limit khatam hone se pehle)
+-----
+Is chat ka summary STATE.md format me do: done, current step ke pending items,
+known bugs, decisions jo spec se alag liye. Secrets mat likho.
+-----
+
+============================================================
+FINAL NOTE
+============================================================
+Order yaad rakho: S0 -> S1 -> S2 -> S3 -> S4 -> S5 (yahan tak = tumhari asli problem solve:
+routine + reminders) -> S6 -> S7 -> S8 -> S9 -> S10 -> AI.
+Pehle S3-S5 poora karo. Wahi app ka dil hai.

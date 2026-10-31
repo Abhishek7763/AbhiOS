@@ -1,0 +1,62 @@
+=== COPY EVERYTHING BELOW THIS LINE AND PASTE IT AS ONE MESSAGE IN GOOGLE AI STUDIO ===
+(Ek chat/message = ek file. Pichhla step verify hone ke baad hi agla.)
+
+PART 1 - PROJECT CONTEXT
+You are working on an EXISTING app: "Personal Goal OS" (AbhiOS). Single real user (Abhishek), Android-first PWA.
+
+Stack (do not change): Next.js 15 App Router, React 19, TypeScript, Tailwind v4, Firebase Auth (Google sign-in) with firebase-admin token verification, Postgres via Drizzle ORM (src/db/schema.ts, repository.ts), web-push, optional Gemini via @google/genai. UI text is Hinglish and lives in src/lib/strings.ts.
+Key files: src/context/goal-os-context.tsx (client state + sync), src/db/repository.ts, src/db/schema.ts, src/lib/logic/* (pure functions: dates, planner, attention, quality-gate, tick-logic, tested in rules.test.ts with node:test), app/api/{state,cron/tick,done,ai/suggest}/route.ts, public/sw.js, app/manifest.ts.
+
+Product rules: Brain Dump first; goals must pass a Quality Gate; no streaks, no guilt, no life score; AI is optional and only drafts (never auto-changes data); everything works without AI; "today" is computed with timezone + dayRolloverHour (never UTC date slicing).
+
+Engineering rules (follow strictly):
+1. Do NOT rewrite or restyle working UI. Make the smallest change that satisfies the task. Do not rename or move files unless the task says so.
+2. No new dependencies unless the task explicitly allows them.
+3. Every API route: validate HTTP method, authenticate (Firebase ID token for user routes, CRON_SECRET for cron), validate and size-limit input, return Cache-Control: no-store, never leak internal error details, never log tokens or secrets.
+4. Every database read/write/update/delete must be scoped to the authenticated user (WHERE user_id = uid). A user must never be able to modify another user's rows.
+5. Never use a default/fallback secret. If a required secret is missing, fail closed.
+6. Keep business logic pure in src/lib/logic and add tests for every new logic function in rules.test.ts (or a new *.test.ts). Run: node tests, `tsc --noEmit`, and lint. Fix errors you introduce.
+7. Use strings.ts for all user-visible text (Hinglish).
+8. Touch targets >= 44px, input font-size 16px, mobile-first.
+9. At the end of every task, output: (a) list of files changed, (b) any new env vars, (c) exact manual test steps, (d) anything you were unsure about. If a requirement is ambiguous, ask ONE question before coding.
+DEPLOYMENT FACTS (important):
+- Code lives on GitHub. Deployed on Vercel (serverless; every API route is a serverless function). Coding is done in Google AI Studio.
+- Database: Google Cloud SQL (PostgreSQL), accessed with Drizzle + pg using env vars SQL_HOST / SQL_USER / SQL_PASSWORD / SQL_DB_NAME. NOT Supabase. Auth: Firebase Auth (Google sign-in).
+- Serverless implications: DB connections must stay small (pool max 1-2 per instance), no in-memory state shared between requests, no background timers, scheduled work is triggered by an external HTTP call to /api/cron/tick.
+
+
+PART 2 - YOUR TASK: PROMPT 2 - REAL REMINDERS (core feature)
+
+Task: make push reminders actually work end to end on Android Chrome (installed PWA). Reuse the existing pure function evaluateReminderTick (do not change its behavior), the existing reminder_sent and push_subscriptions tables, and web-push (already installed).
+
+A. Database: add Drizzle migration with a UNIQUE index on reminder_sent(user_id, log_date, item_key, nudge_no) and UNIQUE on push_subscriptions(endpoint). Make sure push_subscriptions has endpoint, p256dh, auth, user_agent, created_at, last_ok_at (add missing columns).
+B. API (all use verifyBearerUser from src/lib/auth-server.ts):
+   - POST /api/push/subscribe {endpoint, keys:{p256dh,auth}, userAgent} -> upsert for this user.
+   - POST /api/push/unsubscribe {endpoint} -> delete only if it belongs to this user.
+   - POST /api/push/test -> sends a test notification to this user's subscriptions.
+C. Client: in src/hooks/use-pwa.ts (or a new hook) add enablePush(): Notification.requestPermission(), registration.pushManager.subscribe({userVisibleOnly:true, applicationServerKey: NEXT_PUBLIC_VAPID_PUBLIC_KEY}), POST to /api/push/subscribe; add disablePush() and a status (unsupported / denied / enabled / disabled). In settings-view.tsx add a small section "Reminders": Enable / Disable / Test notification + status text + a short help line about Android battery optimization ("Chrome ko Battery: Unrestricted karo"). Hinglish strings in strings.ts.
+D. Rewrite app/api/cron/tick/route.ts (requireCron only):
+   1. Load all user_settings with push_enabled = true.
+   2. For each user: compute local date (todayLocal with timezone + rollover), nowMinutes; load only what is needed (today's day plan, active routines, today's routine logs, today's reminder_sent, today's daily review, push subscriptions) with user-scoped queries.
+   3. Call evaluateReminderTick. If it returns a digest notification: first INSERT the reminder_sent rows with ON CONFLICT DO NOTHING RETURNING; only send a push if at least one row was actually inserted (idempotency across overlapping ticks).
+   4. Build the payload {title, body, tag, url, actions, data:{token}} and attach signed done-tokens (from src/lib/done-token.ts) per action (exp 6h).
+   5. Send with web-push (VAPID keys from env, urgency 'high', TTL 3600). On 404/410 delete that subscription. On success update last_ok_at.
+   6. Response: { users, sent, skipped } only.
+E. Rewrite app/api/done/route.ts: verify token (fail closed), then in ONE transaction write routine_logs for token.uid: act 'done' -> upsert status 'done'; act 'water' -> add step_value (cap at target) and set status partial/done using the existing applyWaterDelta logic. Verify the routine belongs to uid and is active. Accept only today's logical date or yesterday's. Idempotent. Return {ok:true, ...}.
+F. public/sw.js: on notificationclick for 'done'/'water' call /api/done; on success show a short confirmation notification and close; on failure open the app at /?tab=today. Use existing icons. Add a 'snooze' action (15 min) that calls a new POST /api/done with act 'snooze' (creates a reminder_sent-like snooze marker or reschedules nudge) - keep this minimal and tested.
+G. Scheduler: document in README.md a "Reminder scheduler" section: call POST /api/cron/tick every 5 minutes with header Authorization: Bearer $CRON_SECRET. Explain two options: (1) a free external cron service hitting the URL, (2) Vercel cron if the current plan supports 5-minute intervals (check current Vercel docs before choosing; do not assume). Do not add a Vercel cron entry that the plan cannot run.
+H. Env vars to add to .env.example: NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, CRON_SECRET, DONE_LINK_SECRET. Explain in README how to generate VAPID keys (npx web-push generate-vapid-keys).
+I. Tests: tick idempotency (two runs in the same minute -> one notification), quiet hours -> none, daily cap respected, done-token + done route logic (extract pure parts), 404/410 cleanup logic.
+
+CHECK:
+- Phone par app install -> Settings -> Enable -> Test notification aaye (app band hone par bhi).
+- Ek routine ka time 2-3 min aage rakho, scheduler se tick chalao -> notification aata hai.
+- Notification ka "Ho gaya" dabao -> app kholo -> routine tick dikhta hai (DB me done).
+- "+250 ml" se paani badhta hai.
+- Wahi tick do baar chalao -> notification sirf ek baar.
+- Quiet hours me kuch nahi aata.
+- Disable notifications -> kuch nahi aata.
+
+DEPLOYMENT NOTE for step G (scheduler): the app is deployed on Vercel. Do not assume Vercel cron can run every 5 minutes on my plan. Check current Vercel docs. Default to documenting an external scheduler (a free external cron service) that calls POST /api/cron/tick with the Authorization header every 5 minutes, and only add a vercel.json cron entry if the docs confirm my plan supports that frequency. Also make sure the tick route keeps DB connections minimal (reuse the singleton pool) and finishes well within the serverless time limit (process users in batches if needed).
+
+Before editing any file, start with a short plan (max 8 lines: files you will touch, risks, anything unclear). Then implement. Do not touch files outside this task. If you must, explain why.
