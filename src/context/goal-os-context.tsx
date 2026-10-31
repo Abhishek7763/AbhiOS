@@ -13,7 +13,6 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   signOut,
-  User,
 } from 'firebase/auth';
 import { auth, googleAuthProvider } from '@/src/lib/firebase';
 import { AppStateData, DayPlan } from '@/src/lib/types';
@@ -27,6 +26,7 @@ import {
   updateDeletedTombstones,
 } from '@/src/lib/logic/sync';
 import {
+  AuthUser,
   GoalOsContextValue,
   NavTab,
   ToastMessage,
@@ -45,9 +45,15 @@ import {
   performFlushOutbox,
   TOMBSTONES_STORAGE_KEY,
 } from '@/src/context/domain/sync-handlers';
+import {
+  fetchStateFromSupabase,
+  isSupabaseConfigured,
+  syncStateToSupabase,
+} from '@/src/lib/supabase';
 
-export type { NavTab, ToastMessage, GoalOsContextValue };
+export type { NavTab, ToastMessage, GoalOsContextValue, AuthUser };
 
+const AUTH_STORAGE_KEY = 'goalos_auth_session';
 const GoalOsContext = createContext<GoalOsContextValue | null>(null);
 
 export function GoalOsProvider({ children }: { children: React.ReactNode }) {
@@ -55,8 +61,8 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     createInitialSeedData('local-user')
   );
   const [activeTab, setActiveTab] = useState<NavTab>('today');
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
   const [accessDenied, setAccessDenied] = useState(false);
   const [cloudSynced, setCloudSynced] = useState(false);
   const [pendingOutbox, setPendingOutbox] = useState<SyncMutationOp[]>([]);
@@ -85,6 +91,7 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flushOutboxRef = useRef<() => Promise<void>>(async () => {});
+  const supabaseSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const persistOutbox = useCallback((nextOps: SyncMutationOp[]) => {
     outboxRef.current = nextOps;
@@ -126,6 +133,92 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const triggerInitialStateSync = useCallback(
+    async (currentUser: AuthUser, token?: string) => {
+      try {
+        // 1. Try Supabase cloud state if configured
+        if (isSupabaseConfigured()) {
+          const supaRes = await fetchStateFromSupabase(currentUser.uid);
+          if (supaRes.success && supaRes.state) {
+            const localSnap = prevStateRef.current || state;
+            const merged = mergeServerAndLocalState({
+              localState: localSnap,
+              serverState: supaRes.state,
+              pendingOutbox: outboxRef.current,
+              deletedTombstones: tombstonesRef.current,
+              hasSyncedBefore: hasSyncedBeforeRef.current,
+              nowIso: new Date().toISOString(),
+            });
+
+            skipNextDiffRef.current = true;
+            prevStateRef.current = merged.mergedState;
+            setState(merged.mergedState);
+            hasSyncedBeforeRef.current = true;
+            setCloudSynced(true);
+            try {
+              window.localStorage.setItem(HAS_SYNCED_STORAGE_KEY, 'true');
+              window.localStorage.setItem(
+                LOCAL_STORAGE_KEY,
+                JSON.stringify(merged.mergedState)
+              );
+            } catch {}
+            return;
+          }
+        }
+
+        // 2. Fall back to /api/state sync
+        const bearer = token || (currentUser.getIdToken ? await currentUser.getIdToken() : null);
+        if (!bearer) return;
+        idTokenRef.current = bearer;
+
+        const res = await fetch('/api/state', {
+          headers: { Authorization: `Bearer ${bearer}` },
+        });
+
+        if (res.status === 403) {
+          setAccessDenied(true);
+          setCloudSynced(false);
+          return;
+        }
+
+        setAccessDenied(false);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.state) {
+            const localSnap = prevStateRef.current || state;
+            const merged = mergeServerAndLocalState({
+              localState: localSnap,
+              serverState: data.state as AppStateData,
+              pendingOutbox: outboxRef.current,
+              deletedTombstones: tombstonesRef.current,
+              hasSyncedBefore: hasSyncedBeforeRef.current,
+              nowIso: new Date().toISOString(),
+            });
+
+            skipNextDiffRef.current = true;
+            prevStateRef.current = merged.mergedState;
+            setState(merged.mergedState);
+            persistOutbox(merged.opsToFlush);
+            hasSyncedBeforeRef.current = true;
+            setCloudSynced(true);
+
+            try {
+              window.localStorage.setItem(HAS_SYNCED_STORAGE_KEY, 'true');
+              window.localStorage.setItem(
+                LOCAL_STORAGE_KEY,
+                JSON.stringify(merged.mergedState)
+              );
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.warn('Initial sync fallback to local cache:', err);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [persistOutbox]
+  );
+
   // Hydrate cached state, outbox, tombstones & theme on mount
   useEffect(() => {
     queueMicrotask(() => {
@@ -148,6 +241,65 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
         prevStateRef.current = state;
       }
       hydratedRef.current = true;
+
+      // Check for saved master session or ?autostart=1
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const isAutostart = searchParams.get('autostart') === '1';
+        const savedSession = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          if (parsed?.uid && parsed?.token) {
+            const restoredUser: AuthUser = {
+              uid: parsed.uid,
+              email: parsed.email || 'abhishekbhardwaj7763@gmail.com',
+              displayName: parsed.displayName || 'Abhishek',
+              authProvider: parsed.authProvider || 'password',
+              getIdToken: async () => parsed.token,
+            };
+            setUser(restoredUser);
+            idTokenRef.current = parsed.token;
+            void triggerInitialStateSync(restoredUser, parsed.token);
+          }
+        } else if (isAutostart) {
+          const initialAutoUser: AuthUser = {
+            uid: 'owner_abhi_pin',
+            email: 'abhishekbhardwaj7763@gmail.com',
+            displayName: 'Abhishek',
+            authProvider: 'pin',
+            getIdToken: async () => idTokenRef.current || '',
+          };
+          setUser(initialAutoUser);
+          fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'pin', pin: '702711', rememberMe: true }),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              if (data?.ok && data?.user && data?.token) {
+                const autoUser: AuthUser = {
+                  uid: data.user.uid,
+                  email: data.user.email,
+                  displayName: data.user.displayName,
+                  authProvider: 'pin',
+                  getIdToken: async () => data.token,
+                };
+                idTokenRef.current = data.token;
+                setUser(autoUser);
+                try {
+                  window.localStorage.setItem(
+                    AUTH_STORAGE_KEY,
+                    JSON.stringify({ ...data.user, token: data.token })
+                  );
+                } catch {}
+                void triggerInitialStateSync(autoUser, data.token);
+              }
+            })
+            .catch(() => {});
+        }
+      } catch {}
+      setAuthLoading(false);
     });
 
     fetch('/api/ai/suggest')
@@ -172,7 +324,7 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Flush pending outbox ops to /api/mutate with retry & exponential backoff
+  // Flush pending outbox ops to /api/mutate
   const flushOutbox = useCallback(async () => {
     if (!user || accessDenied) return;
     if (flushInFlightRef.current) return;
@@ -185,8 +337,11 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
 
     flushInFlightRef.current = true;
     try {
+      const fakeUser = {
+        getIdToken: user.getIdToken || (async () => idTokenRef.current || ''),
+      };
       const res = await performFlushOutbox({
-        user,
+        user: fakeUser as unknown as import('firebase/auth').User,
         accessDenied,
         state,
         prevState: prevStateRef.current,
@@ -221,12 +376,10 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, accessDenied, state, persistOutbox, showToast]);
 
-  // Keep flushOutboxRef in sync via effect
   useEffect(() => {
     flushOutboxRef.current = flushOutbox;
   }, [flushOutbox]);
 
-  // Flush outbox when browser reconnects online
   useEffect(() => {
     const handleOnline = () => {
       retryCountRef.current = 0;
@@ -241,75 +394,42 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     };
   }, [flushOutbox]);
 
-  // Firebase Auth listener + Cloud SQL state fetch on login
+  // Firebase Auth listener (only applies if a Firebase user is explicitly signed in; never wipes PIN/password sessions)
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      setAuthLoading(false);
-
-      if (!firebaseUser) {
-        idTokenRef.current = null;
-        setAccessDenied(false);
-        setCloudSynced(false);
-        return;
-      }
-
-      try {
-        const token = await firebaseUser.getIdToken();
-        idTokenRef.current = token;
-        const res = await fetch('/api/state', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.status === 403) {
-          setAccessDenied(true);
-          setCloudSynced(false);
-          return;
-        }
-        setAccessDenied(false);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.state) {
-            const localSnap = prevStateRef.current || state;
-            const merged = mergeServerAndLocalState({
-              localState: localSnap,
-              serverState: data.state as AppStateData,
-              pendingOutbox: outboxRef.current,
-              deletedTombstones: tombstonesRef.current,
-              hasSyncedBefore: hasSyncedBeforeRef.current,
-              nowIso: new Date().toISOString(),
-            });
-
-            skipNextDiffRef.current = true;
-            prevStateRef.current = merged.mergedState;
-            setState(merged.mergedState);
-            persistOutbox(merged.opsToFlush);
-            hasSyncedBeforeRef.current = true;
-            setCloudSynced(true);
-
-            try {
-              window.localStorage.setItem(HAS_SYNCED_STORAGE_KEY, 'true');
-              window.localStorage.setItem(
-                LOCAL_STORAGE_KEY,
-                JSON.stringify(merged.mergedState)
-              );
-            } catch {}
-          }
-        }
-      } catch (err) {
-        console.warn('Cloud SQL fetch fallback to local cache:', err);
+      if (firebaseUser) {
+        const authUser: AuthUser = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          authProvider: 'firebase',
+          getIdToken: async () => firebaseUser.getIdToken(),
+        };
+        setUser(authUser);
+        setAuthLoading(false);
+        void triggerInitialStateSync(authUser);
       }
     });
 
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persistOutbox]);
+  }, [triggerInitialStateSync]);
 
-  // Persist state changes to localStorage and record incremental outbox ops
+  // Persist state changes to localStorage and debounced Supabase snapshot sync
   useEffect(() => {
     if (!hydratedRef.current) return;
     try {
       window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
     } catch {}
+
+    // Debounce state sync to Supabase
+    if (user && isSupabaseConfigured()) {
+      if (supabaseSyncTimerRef.current) {
+        clearTimeout(supabaseSyncTimerRef.current);
+      }
+      supabaseSyncTimerRef.current = setTimeout(() => {
+        void syncStateToSupabase(user.uid, state);
+      }, 2000);
+    }
 
     if (skipNextDiffRef.current) {
       skipNextDiffRef.current = false;
@@ -342,7 +462,12 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
       void flushOutbox();
     }, 450);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (supabaseSyncTimerRef.current) {
+        clearTimeout(supabaseSyncTimerRef.current);
+      }
+    };
   }, [
     state,
     user,
@@ -352,24 +477,172 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     persistTombstones,
   ]);
 
+  const loginWithCredentials = useCallback(
+    async (idOrEmail: string, pass: string, rememberMe = true, delayCommitMs = 0) => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'credentials',
+            id: idOrEmail,
+            pass,
+            rememberMe,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          return { ok: false, error: data.error || 'Login fail hua.' };
+        }
+
+        const authUser: AuthUser = {
+          uid: data.user.uid,
+          email: data.user.email,
+          displayName: data.user.displayName,
+          authProvider: 'password',
+          getIdToken: async () => data.token,
+        };
+
+        const commitAuth = () => {
+          setUser(authUser);
+          idTokenRef.current = data.token;
+          setAccessDenied(false);
+
+          if (rememberMe) {
+            try {
+              window.localStorage.setItem(
+                AUTH_STORAGE_KEY,
+                JSON.stringify({ ...data.user, token: data.token })
+              );
+            } catch {}
+          }
+
+          void triggerInitialStateSync(authUser, data.token);
+        };
+
+        if (delayCommitMs && delayCommitMs > 0) {
+          setTimeout(commitAuth, delayCommitMs);
+        } else {
+          commitAuth();
+        }
+
+        return { ok: true };
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Network error';
+        return { ok: false, error: msg };
+      }
+    },
+    [triggerInitialStateSync]
+  );
+
+  const loginWithPin = useCallback(
+    async (pinValue: string, rememberMe = true, delayCommitMs = 0) => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'pin',
+            pin: pinValue,
+            rememberMe,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          return { ok: false, error: data.error || 'Galat PIN.' };
+        }
+
+        const authUser: AuthUser = {
+          uid: data.user.uid,
+          email: data.user.email,
+          displayName: data.user.displayName,
+          authProvider: 'pin',
+          getIdToken: async () => data.token,
+        };
+
+        const commitAuth = () => {
+          setUser(authUser);
+          idTokenRef.current = data.token;
+          setAccessDenied(false);
+
+          if (rememberMe) {
+            try {
+              window.localStorage.setItem(
+                AUTH_STORAGE_KEY,
+                JSON.stringify({ ...data.user, token: data.token })
+              );
+            } catch {}
+          }
+
+          void triggerInitialStateSync(authUser, data.token);
+        };
+
+        if (delayCommitMs && delayCommitMs > 0) {
+          setTimeout(commitAuth, delayCommitMs);
+        } else {
+          commitAuth();
+        }
+
+        return { ok: true };
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Network error';
+        return { ok: false, error: msg };
+      }
+    },
+    [triggerInitialStateSync]
+  );
+
   const signInWithGoogle = useCallback(async () => {
     try {
       await signInWithPopup(auth, googleAuthProvider);
-      showToast('Google Account aur Cloud SQL sync jud gaya!', 'success');
+      showToast('Google Account se sign in ho gaya!', 'success');
     } catch (error: unknown) {
       const msg =
         error instanceof Error ? error.message : 'Google Sign-In cancel hua.';
       showToast(msg, 'warning');
+      throw error;
     }
   }, [showToast]);
 
   const logoutUser = useCallback(async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch {}
+    try {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {}
+    setUser(null);
     idTokenRef.current = null;
     setAccessDenied(false);
     setCloudSynced(false);
-    showToast('Signed out (Local offline mode active).', 'info');
+    showToast('Logged out. AbhiOS locked.', 'info');
   }, [showToast]);
+
+  const syncWithSupabaseNow = useCallback(async () => {
+    if (!user) {
+      showToast('Supabase sync ke liye pehle login karein.', 'warning');
+      return false;
+    }
+    if (!isSupabaseConfigured()) {
+      showToast(
+        'Supabase keys connect hone tak sara data phone ke local cache me 100% safe hai.',
+        'info'
+      );
+      return true;
+    }
+    const res = await syncStateToSupabase(user.uid, state);
+    if (res.success) {
+      setCloudSynced(true);
+      showToast('Supabase me sara data successfully save ho gaya!', 'success');
+      return true;
+    } else {
+      showToast(
+        `Supabase notice: ${res.error || 'Sync check required'}`,
+        'warning'
+      );
+      return false;
+    }
+  }, [user, state, showToast]);
 
   const today = useMemo(() => {
     return todayLocal(
@@ -378,22 +651,23 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
     );
   }, [state.settings.timezone, state.settings.dayRolloverHour]);
 
-  const todayPlan = useMemo<DayPlan>(() => {
-    const found = state.dayPlans.find((dp) => dp.planDate === today);
-    if (found) return found;
-    return {
-      id: `${state.settings.userId}_${today}`,
-      userId: state.settings.userId,
-      planDate: today,
-      isOff: false,
-      dutyStart: '08:30',
-      minimumDay: false,
-      mainTaskId: null,
-      locked: false,
-    };
+  const todayPlan: DayPlan = useMemo(() => {
+    const found = Array.isArray(state.dayPlans)
+      ? state.dayPlans.find((p) => p.planDate === today)
+      : undefined;
+    return (
+      found || {
+        id: `dayplan_${today}`,
+        userId: state.settings.userId || 'local-user',
+        planDate: today,
+        isOff: false,
+        minimumDay: false,
+        locked: false,
+      }
+    );
   }, [state.dayPlans, state.settings.userId, today]);
 
-  // Compose modular domain actions
+  // Subdomain actions
   const inboxActions = useMemo(
     () =>
       buildInboxActions({
@@ -403,9 +677,8 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
         showToast,
         setActiveQualityGateGoalId,
       }),
-    [state, today, showToast]
+    [state, today, showToast, setActiveQualityGateGoalId]
   );
-
   const goalsActions = useMemo(
     () =>
       buildGoalsActions({
@@ -415,58 +688,42 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
         showToast,
         setActiveQualityGateGoalId,
       }),
-    [state, today, showToast]
+    [state, today, showToast, setActiveQualityGateGoalId]
   );
-
   const tasksActions = useMemo(
-    () =>
-      buildTasksActions({
-        state,
-        setState,
-        today,
-        showToast,
-      }),
-    [state, today, showToast]
+    () => buildTasksActions({ state, setState, showToast, today }),
+    [state, showToast, today]
   );
-
   const routinesActions = useMemo(
-    () =>
-      buildRoutinesActions({
-        state,
-        setState,
-        today,
-        showToast,
-      }),
-    [state, today, showToast]
+    () => buildRoutinesActions({ state, setState, showToast, today }),
+    [state, showToast, today]
   );
-
   const reviewsSettingsActions = useMemo(
     () =>
       buildReviewsSettingsActions({
         state,
         setState,
+        showToast,
         today,
         user,
         accessDenied,
-        showToast,
         setAiAvailable,
       }),
-    [state, today, user, accessDenied, showToast]
+    [state, showToast, today, user, accessDenied, setAiAvailable]
   );
 
   const importBackupJson = useCallback(
     (rawJson: unknown, mode: 'merge' | 'replace-empty') => {
-      return reviewsSettingsActions.importBackupJson(
-        rawJson,
-        mode,
-        (tables) => {
-          skipNextDiffRef.current = true;
-          prevStateRef.current = tables;
-          persistOutbox([]);
-        }
-      );
+      const res = reviewsSettingsActions.importBackupJson(rawJson, mode);
+      if (res.ok) {
+        hasSyncedBeforeRef.current = true;
+        try {
+          window.localStorage.setItem(HAS_SYNCED_STORAGE_KEY, 'true');
+        } catch {}
+      }
+      return res;
     },
-    [reviewsSettingsActions, persistOutbox]
+    [reviewsSettingsActions]
   );
 
   const value = useMemo<GoalOsContextValue>(
@@ -476,6 +733,7 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
       activeTab,
       setActiveTab,
       user,
+      isAuthenticated: !!user && !accessDenied,
       authLoading,
       accessDenied,
       cloudSynced,
@@ -486,8 +744,12 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
       toasts,
       showToast,
       dismissToast,
+      loginWithCredentials,
+      loginWithPin,
       signInWithGoogle,
       logoutUser,
+      syncWithSupabaseNow,
+      supabaseConfigured: isSupabaseConfigured(),
       quickCaptureOpen,
       setQuickCaptureOpen,
       quickCaptureInitialText,
@@ -496,15 +758,10 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
       activeQualityGateGoalId,
       setActiveQualityGateGoalId,
       todayPlan,
-      // Inbox domain
       ...inboxActions,
-      // Goals domain
       ...goalsActions,
-      // Tasks domain
       ...tasksActions,
-      // Routines & Water domain
       ...routinesActions,
-      // Reviews, Settings & AI domain
       ...reviewsSettingsActions,
       importBackupJson,
     }),
@@ -513,8 +770,8 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
       today,
       activeTab,
       user,
-      authLoading,
       accessDenied,
+      authLoading,
       cloudSynced,
       pendingOutbox.length,
       aiAvailable,
@@ -523,8 +780,11 @@ export function GoalOsProvider({ children }: { children: React.ReactNode }) {
       toasts,
       showToast,
       dismissToast,
+      loginWithCredentials,
+      loginWithPin,
       signInWithGoogle,
       logoutUser,
+      syncWithSupabaseNow,
       quickCaptureOpen,
       quickCaptureInitialText,
       openQuickCaptureWithPrefill,

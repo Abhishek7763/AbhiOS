@@ -5,8 +5,10 @@ import {
   ArrowDown,
   ArrowUp,
   Bell,
+  CheckCircle2,
   Cloud,
   Download,
+  Lock,
   LogIn,
   LogOut,
   Moon,
@@ -33,6 +35,8 @@ export function SettingsView() {
     toggleDarkMode,
     signInWithGoogle,
     logoutUser,
+    syncWithSupabaseNow,
+    supabaseConfigured,
     updateSettings,
     createRoutine,
     updateRoutine,
@@ -53,24 +57,37 @@ export function SettingsView() {
   } = usePushReminders(user);
   const [showIosGuide, setShowIosGuide] = useState(false);
 
-  // Local settings form values
-  const [timezone, setTimezone] = useState(state.settings.timezone);
-  const [wakeTime, setWakeTime] = useState(state.settings.wakeTime);
-  const [quietStart, setQuietStart] = useState(state.settings.quietStart);
-  const [quietEnd, setQuietEnd] = useState(state.settings.quietEnd);
-  const [dayRolloverHour, setDayRolloverHour] = useState(
-    state.settings.dayRolloverHour
+  // Local settings form overrides (fall back to live state.settings until edited)
+  const [timezoneDraft, setTimezone] = useState<string | null>(null);
+  const [wakeTimeDraft, setWakeTime] = useState<string | null>(null);
+  const [quietStartDraft, setQuietStart] = useState<string | null>(null);
+  const [quietEndDraft, setQuietEnd] = useState<string | null>(null);
+  const [dayRolloverHourDraft, setDayRolloverHour] = useState<number | null>(
+    null
   );
-  const [dailyWorkloadMinutes, setDailyWorkloadMinutes] = useState(
-    state.settings.dailyWorkloadMinutes
+  const [dailyWorkloadMinutesDraft, setDailyWorkloadMinutes] = useState<
+    number | null
+  >(null);
+  const [dutyPromptTimeDraft, setDutyPromptTime] = useState<string | null>(
+    null
   );
-  const [dutyPromptTime, setDutyPromptTime] = useState(
-    state.settings.dutyPromptTime
-  );
-  const [reviewTime, setReviewTime] = useState(state.settings.reviewTime);
-  const [maxRemindersPerDay, setMaxRemindersPerDay] = useState(
-    state.settings.maxRemindersPerDay
-  );
+  const [reviewTimeDraft, setReviewTime] = useState<string | null>(null);
+  const [maxRemindersPerDayDraft, setMaxRemindersPerDay] = useState<
+    number | null
+  >(null);
+
+  const timezone = timezoneDraft ?? state.settings.timezone;
+  const wakeTime = wakeTimeDraft ?? state.settings.wakeTime;
+  const quietStart = quietStartDraft ?? state.settings.quietStart;
+  const quietEnd = quietEndDraft ?? state.settings.quietEnd;
+  const dayRolloverHour =
+    dayRolloverHourDraft ?? state.settings.dayRolloverHour;
+  const dailyWorkloadMinutes =
+    dailyWorkloadMinutesDraft ?? state.settings.dailyWorkloadMinutes;
+  const dutyPromptTime = dutyPromptTimeDraft ?? state.settings.dutyPromptTime;
+  const reviewTime = reviewTimeDraft ?? state.settings.reviewTime;
+  const maxRemindersPerDay =
+    maxRemindersPerDayDraft ?? state.settings.maxRemindersPerDay;
 
   // Routine Creator State
   const [rtTitle, setRtTitle] = useState('');
@@ -98,7 +115,7 @@ export function SettingsView() {
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings({
-      timezone,
+      timezone: 'Asia/Kolkata',
       wakeTime,
       quietStart,
       quietEnd,
@@ -143,13 +160,13 @@ export function SettingsView() {
   const handleRunReminderTickTest = async (simulatedTimeMinutes?: number) => {
     if (!user) {
       showToast(
-        'Reminder preview ke liye pehle Google Sign-In karein.',
+        'Reminder preview ke liye pehle PIN ya ID se login karein.',
         'warning'
       );
       return;
     }
     try {
-      const token = await user.getIdToken();
+      const token = user.getIdToken ? await user.getIdToken() : '';
       const res = await fetch('/api/reminders/preview', {
         method: 'POST',
         headers: {
@@ -223,23 +240,36 @@ export function SettingsView() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Cloud SQL Sync, Google Auth, PWA Install & Theme */}
+      {/* 1. Supabase Cloud Sync, Active User & Theme */}
       <section className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-              Settings, Cloud SQL Sync & Routines
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-0.5">
-              Cloud SQL: {cloudSynced ? 'Connected & Synced' : 'Local Cache Ready'} (
-              {STRINGS.sync.pendingLabel(pendingSyncCount)}) · Gemini AI:{' '}
-              {aiAvailable
-                ? 'Active (Server-Side)'
-                : 'Manual/Deterministic Mode Active'}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                Settings & Cloud Sync
+              </h1>
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 font-semibold border border-teal-200 dark:border-teal-800">
+                {supabaseConfigured ? 'Supabase Active' : 'Offline Cache Ready'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-1">
+              User: <span className="text-teal-700 dark:text-teal-300 font-semibold">{user?.email || 'Abhishek'}</span> · Sync:{' '}
+              {cloudSynced ? 'Cloud Synced' : 'Saved Locally'}{' '}
+              ({STRINGS.sync.pendingLabel(pendingSyncCount)})
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Supabase 1-tap sync button */}
+            <button
+              type="button"
+              onClick={() => void syncWithSupabaseNow()}
+              className="min-h-[44px] px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold flex items-center gap-2 shadow-2xs"
+            >
+              <Cloud className="w-4 h-4" />
+              <span>Sync to Cloud Now</span>
+            </button>
+
             {/* Dark Mode Toggle */}
             <button
               type="button"
@@ -264,7 +294,7 @@ export function SettingsView() {
               <button
                 type="button"
                 onClick={install}
-                className="min-h-[44px] px-4 py-2 rounded-xl bg-teal-700 text-white text-xs font-semibold flex items-center gap-2"
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-2"
               >
                 <Smartphone className="w-4 h-4" />
                 Install App (PWA)
@@ -280,24 +310,15 @@ export function SettingsView() {
               </button>
             )}
 
-            {/* Google Sign-In for Cloud SQL Persistence */}
-            {user ? (
+            {/* Sign Out Button */}
+            {user && (
               <button
                 type="button"
                 onClick={logoutUser}
-                className="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2"
+                className="min-h-[44px] px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2 hover:bg-rose-100 dark:hover:bg-rose-900/50"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out ({user.email?.split('@')[0]})
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={signInWithGoogle}
-                className="min-h-[44px] px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold flex items-center gap-2"
-              >
-                <LogIn className="w-4 h-4" />
-                Sign In with Google (Cloud SQL Sync)
+                Lock / Sign Out
               </button>
             )}
           </div>
@@ -325,15 +346,26 @@ export function SettingsView() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Timezone
-            </label>
-            <input
-              type="text"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-base font-mono"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Timezone (India IST)
+              </label>
+              <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> Auto Synced
+              </span>
+            </div>
+            <div className="w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-850 px-3.5 py-2.5 text-xs font-mono text-slate-800 dark:text-slate-200 flex items-center justify-between shadow-2xs">
+              <span className="font-semibold flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                Asia/Kolkata (IST +05:30)
+              </span>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                Locked
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+              Internet network time se automatically synced hai (galti hone se bachane ke liye uneditable).
+            </p>
           </div>
 
           <div>

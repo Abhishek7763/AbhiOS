@@ -61,71 +61,28 @@ export function hydrateFromLocalStorage(): HydrateStorageResult {
     if (raw) {
       const parsed = JSON.parse(raw) as AppStateData;
       if (parsed && Array.isArray(parsed.inboxItems)) {
+        // Faithful preservation: If user has saved state, preserve exactly what was saved
         const seed = createInitialSeedData(
           parsed.settings?.userId || 'local-user'
         );
-        const seedAreaMap = new Map(seed.lifeAreas.map((a) => [a.id, a]));
-        const existingAreaIds = new Set(
-          (parsed.lifeAreas || []).map((a) => a.id)
-        );
-        const tombSet = new Set(Object.keys(tombstones));
-        const deletedInOutbox = new Set(
-          outbox
-            .filter((o) => o.op === 'delete')
-            .map((o) => `${o.entity}:${o.id}`)
-        );
-        const missingAreas = seed.lifeAreas.filter(
-          (a) =>
-            !existingAreaIds.has(a.id) &&
-            !tombSet.has(`lifeAreas:${a.id}`) &&
-            !deletedInOutbox.has(`lifeAreas:${a.id}`)
-        );
-        const existingGoalIds = new Set(
-          (parsed.goals || []).map((g) => g.id)
-        );
-        const missingSeedGoals = hasSyncedBefore
-          ? []
-          : seed.goals.filter(
-              (g) =>
-                !existingGoalIds.has(g.id) &&
-                !tombSet.has(`goals:${g.id}`) &&
-                !deletedInOutbox.has(`goals:${g.id}`)
-            );
-        const seedInboxMap = new Map(seed.inboxItems.map((i) => [i.id, i]));
-        const seedGoalMap = new Map(seed.goals.map((g) => [g.id, g]));
+        const userAreas =
+          parsed.lifeAreas && parsed.lifeAreas.length > 0
+            ? parsed.lifeAreas
+            : seed.lifeAreas;
+
         hydratedState = {
           ...parsed,
-          lifeAreas: [
-            ...(parsed.lifeAreas || []).map((a) => {
-              const seedArea = seedAreaMap.get(a.id);
-              return seedArea ? { ...a, name: seedArea.name } : a;
-            }),
-            ...missingAreas,
-          ],
-          inboxItems: (parsed.inboxItems || []).map((item) => {
-            const seedMatch = seedInboxMap.get(item.id);
-            return {
-              ...item,
-              lifeAreaId: item.lifeAreaId ?? seedMatch?.lifeAreaId ?? null,
-              tags:
-                item.tags && item.tags.length > 0
-                  ? item.tags
-                  : seedMatch?.tags || [],
-            };
-          }),
-          goals: [
-            ...(parsed.goals || []).map((goal) => {
-              const seedMatch = seedGoalMap.get(goal.id);
-              return {
-                ...goal,
-                tags:
-                  goal.tags && goal.tags.length > 0
-                    ? goal.tags
-                    : seedMatch?.tags || [],
-              };
-            }),
-            ...missingSeedGoals,
-          ],
+          lifeAreas: userAreas,
+          inboxItems: parsed.inboxItems || [],
+          goals: parsed.goals || [],
+          tasks: parsed.tasks || [],
+          routines: parsed.routines || [],
+          milestones: parsed.milestones || [],
+          projects: parsed.projects || [],
+          dayPlans: Array.isArray(parsed.dayPlans) ? parsed.dayPlans : [],
+          dailyReviews: Array.isArray(parsed.dailyReviews) ? parsed.dailyReviews : [],
+          weeklyReviews: Array.isArray(parsed.weeklyReviews) ? parsed.weeklyReviews : [],
+          routineLogs: Array.isArray(parsed.routineLogs) ? parsed.routineLogs : [],
         };
       }
     }

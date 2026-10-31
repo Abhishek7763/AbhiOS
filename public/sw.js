@@ -1,6 +1,5 @@
-const CACHE_NAME = 'goalos-shell-v4-20261031';
+const CACHE_NAME = 'goalos-shell-v8-stable';
 const PRECACHE_URLS = [
-  '/',
   '/offline',
   '/icon.svg',
   '/pwa-192x192.png',
@@ -10,12 +9,12 @@ const PRECACHE_URLS = [
 const ICON_PATH = '/icon.svg';
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_URLS))
   );
-  // Do NOT auto skipWaiting. Wait for SKIP_WAITING message from the user.
 });
 
 self.addEventListener('message', (event) => {
@@ -45,8 +44,13 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Never cache /api routes or cross-origin requests
-  if (url.origin !== self.location.origin || url.pathname.startsWith('/api')) {
+  // Never cache /api routes, webpack HMR/hot-update files, or cross-origin requests
+  if (
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith('/api') ||
+    url.pathname.startsWith('/_next/webpack-hmr') ||
+    url.pathname.includes('.hot-update.')
+  ) {
     return;
   }
 
@@ -70,9 +74,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Next.js static chunks, assets, and images: Cache-first
+  // 2. Static icons, images, and manifest: Cache-first
   const isStaticAsset =
-    url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/assets/') ||
     url.pathname.endsWith('.png') ||
     url.pathname.endsWith('.svg') ||

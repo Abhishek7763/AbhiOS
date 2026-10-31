@@ -178,7 +178,7 @@ export const STRINGS = {
     batteryHelp:
       'Reminders time par aayein iske liye: Android Settings -> Apps -> Chrome ko Battery: Unrestricted karo.',
     signInRequired:
-      'Push notifications enable ya test karne ke liye pehle Google Sign-In karein.',
+      'Push notifications enable ya test karne ke liye pehle PIN ya ID se login karein.',
     missingVapidKey:
       'Server par NEXT_PUBLIC_VAPID_PUBLIC_KEY set nahi hai.',
     enabledToast: 'Push reminders enable ho gaye!',

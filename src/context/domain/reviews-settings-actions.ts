@@ -17,7 +17,7 @@ export interface ReviewsSettingsActionsDeps {
   state: AppStateData;
   setState: React.Dispatch<React.SetStateAction<AppStateData>>;
   today: string;
-  user: User | null;
+  user: { getIdToken?: () => Promise<string>; email?: string | null } | null;
   accessDenied: boolean;
   showToast: (
     text: string,
@@ -180,7 +180,7 @@ export function buildReviewsSettingsActions({
         onReplaceEmpty(payload.tables);
       }
       setState(payload.tables);
-      if (user && !accessDenied) {
+      if (user && !accessDenied && user.getIdToken) {
         void user.getIdToken().then((token) =>
           fetch('/api/state', {
             method: 'POST',
@@ -239,7 +239,7 @@ export function buildReviewsSettingsActions({
       };
     });
 
-    if (user && !accessDenied) {
+    if (user && !accessDenied && user.getIdToken) {
       void user.getIdToken().then((token) =>
         fetch('/api/state', {
           method: 'POST',
@@ -272,7 +272,7 @@ export function buildReviewsSettingsActions({
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    if (user) {
+    if (user && user.getIdToken) {
       try {
         const token = await user.getIdToken();
         headers.Authorization = `Bearer ${token}`;

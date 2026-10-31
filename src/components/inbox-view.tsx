@@ -123,16 +123,10 @@ export function InboxView() {
 
   const handleInputMoveToTrash = () => {
     if (!captureText.trim()) return;
-    quickCapture(captureText.trim());
-    setTimeout(() => {
-      const latest = brainDumpItems[brainDumpItems.length - 1];
-      if (latest) {
-        updateInboxItem(latest.id, {
-          status: 'trash',
-          decisionNote: 'Typed & immediately trashed',
-        });
-      }
-    }, 100);
+    quickCapture(captureText.trim(), 'manual', {
+      status: 'trash',
+      decisionNote: 'Typed & immediately trashed',
+    });
     setCaptureText('');
     setInputCategoryOverride(null);
     setInputGoalOverride('');
@@ -166,17 +160,11 @@ export function InboxView() {
 
   const handleInputMoveToSpecificGoal = () => {
     if (!captureText.trim() || !effectiveInputGoalId) return;
-    quickCapture(captureText.trim());
-    setTimeout(() => {
-      const latest = brainDumpItems[brainDumpItems.length - 1];
-      if (latest) {
-        moveInboxToExistingGoal(
-          latest.id,
-          effectiveInputGoalId,
-          inputGoalStepType
-        );
-      }
-    }, 100);
+    captureAndMoveToGoal(
+      captureText.trim(),
+      effectiveInputGoalId,
+      inputGoalStepType
+    );
     setCaptureText('');
     setInputCategoryOverride(null);
     setInputGoalOverride('');

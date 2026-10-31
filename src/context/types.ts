@@ -18,6 +18,14 @@ import {
 
 export type NavTab = 'today' | 'inbox' | 'tasks' | 'goals' | 'settings';
 
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName?: string | null;
+  authProvider: 'firebase' | 'supabase' | 'password' | 'pin';
+  getIdToken?: () => Promise<string>;
+}
+
 export interface ToastMessage {
   id: string;
   text: string;
@@ -30,7 +38,8 @@ export interface GoalOsContextValue {
   today: string;
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
-  user: User | null;
+  user: AuthUser | null;
+  isAuthenticated: boolean;
   authLoading: boolean;
   accessDenied: boolean;
   cloudSynced: boolean;
@@ -46,8 +55,21 @@ export interface GoalOsContextValue {
   ) => void;
   dismissToast: (id: string) => void;
   // Auth
+  loginWithCredentials: (
+    idOrEmail: string,
+    pass: string,
+    rememberMe?: boolean,
+    delayCommitMs?: number
+  ) => Promise<{ ok: boolean; error?: string }>;
+  loginWithPin: (
+    pin: string,
+    rememberMe?: boolean,
+    delayCommitMs?: number
+  ) => Promise<{ ok: boolean; error?: string }>;
   signInWithGoogle: () => Promise<void>;
   logoutUser: () => Promise<void>;
+  syncWithSupabaseNow: () => Promise<boolean>;
+  supabaseConfigured: boolean;
   // Quick Capture & Inbox
   quickCaptureOpen: boolean;
   setQuickCaptureOpen: (open: boolean) => void;

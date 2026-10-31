@@ -94,7 +94,12 @@ export function usePWAInstall() {
   };
 }
 
-export function usePushReminders(user: User | null) {
+export type PushableUser = {
+  getIdToken?: () => Promise<string>;
+  email?: string | null;
+} | User | null;
+
+export function usePushReminders(user: PushableUser) {
   const [status, setStatus] = useState<PushReminderStatus>('disabled');
   const [busy, setBusy] = useState(false);
 
@@ -176,7 +181,7 @@ export function usePushReminders(user: User | null) {
       });
 
       const subJson = subscription.toJSON();
-      const token = await user.getIdToken();
+      const token = user.getIdToken ? await user.getIdToken() : '';
       const res = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: {
@@ -222,7 +227,7 @@ export function usePushReminders(user: User | null) {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         if (user) {
-          const token = await user.getIdToken();
+          const token = user.getIdToken ? await user.getIdToken() : '';
           await fetch('/api/push/unsubscribe', {
             method: 'POST',
             headers: {
@@ -249,7 +254,7 @@ export function usePushReminders(user: User | null) {
     if (!user) return { ok: false };
     setBusy(true);
     try {
-      const token = await user.getIdToken();
+      const token = user.getIdToken ? await user.getIdToken() : '';
       const res = await fetch('/api/push/test', {
         method: 'POST',
         headers: {
@@ -299,8 +304,10 @@ export function useServiceWorkerUpdate() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
+    const hadControllerInitially = Boolean(navigator.serviceWorker.controller);
     let refreshing = false;
     const handleControllerChange = () => {
+      if (!hadControllerInitially) return;
       if (!refreshing) {
         refreshing = true;
         window.location.reload();

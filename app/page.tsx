@@ -30,6 +30,7 @@ import {
   GoalQualityGateModal,
 } from '@/src/components/quick-capture-modal';
 import { GlobalSearchModal } from '@/src/components/global-search-modal';
+import { LoginView } from '@/src/components/login-view';
 import { usePWA } from '@/src/hooks/use-pwa';
 
 const NAV_ITEMS: {
@@ -48,6 +49,7 @@ function GoalOsShell() {
   const {
     state,
     user,
+    authLoading,
     accessDenied,
     logoutUser,
     activeTab,
@@ -137,7 +139,26 @@ function GoalOsShell() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchOpen]);
 
-  if (user && accessDenied) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5] dark:bg-[#0A0D12]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-teal-700 text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">
+            AO
+          </div>
+          <span className="text-xs font-medium text-slate-500 font-mono">
+            AbhiOS loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginView />;
+  }
+
+  if (accessDenied) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5] dark:bg-[#0D1117] text-[#14171A] dark:text-[#F0F4F8] px-4">
         <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 text-center space-y-4 shadow-sm">
@@ -177,7 +198,12 @@ function GoalOsShell() {
   ).length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F5] dark:bg-[#0D1117] text-[#14171A] dark:text-[#F0F4F8]">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, ease: 'easeOut' }}
+      className="min-h-screen flex flex-col bg-[#FAF8F5] dark:bg-[#0D1117] text-[#14171A] dark:text-[#F0F4F8] transform-gpu"
+    >
       {/* Offline Banner */}
       {!isOnline && (
         <div
@@ -229,16 +255,23 @@ function GoalOsShell() {
                   type="button"
                   onClick={() => setActiveTab(item.id)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`min-h-[40px] px-3.5 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shrink-0 flex items-center gap-2 ${
+                  className={`relative min-h-[40px] px-3.5 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shrink-0 flex items-center gap-2 cursor-pointer ${
                     isActive
-                      ? 'bg-teal-700/10 dark:bg-teal-500/15 text-teal-800 dark:text-teal-300 font-semibold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                      ? 'text-teal-800 dark:text-teal-300 font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/40'
                   }`}
                 >
+                  {isActive && (
+                    <motion.span
+                      layoutId="desktop-nav-active-pill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                      className="absolute inset-0 rounded-xl bg-teal-700/10 dark:bg-teal-500/15 -z-10"
+                    />
+                  )}
                   <Icon className="w-4 h-4 shrink-0" />
                   <span>{item.label}</span>
                   {count > 0 && (
-                    <span className="text-xs font-mono text-teal-700 dark:text-teal-300">
+                    <span className="text-xs font-mono tabular-nums text-teal-700 dark:text-teal-300">
                       ({count})
                     </span>
                   )}
@@ -255,7 +288,7 @@ function GoalOsShell() {
               onClick={() => setSearchOpen(true)}
               aria-label="Open Quick Search"
               title="Quick Search (Ctrl+K)"
-              className="min-h-[42px] px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium transition-colors flex items-center gap-1.5 shrink-0"
+              className="min-h-[42px] px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-[0.98] text-slate-600 dark:text-slate-300 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
               <Search className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">Khojein</span>
@@ -267,7 +300,7 @@ function GoalOsShell() {
               type="button"
               onClick={() => setQuickCaptureOpen(true)}
               aria-label="Open Brain Dump Quick Capture"
-              className="min-h-[44px] px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-600 active:scale-[0.98] text-white text-sm font-semibold shadow-xs transition-all whitespace-nowrap shrink-0 flex items-center gap-2"
+              className="min-h-[44px] px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-600 active:scale-[0.98] text-white text-sm font-semibold shadow-xs transition-all whitespace-nowrap shrink-0 flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4 shrink-0" />
               <span>{STRINGS.quickCapture.button}</span>
@@ -276,15 +309,16 @@ function GoalOsShell() {
         </div>
       </header>
 
-      {/* Main Content Area with Smooth Motion Transition */}
+      {/* Main Content Area with Smooth Hardware-Accelerated Motion Transition */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-28 md:pb-12">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.16, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: -3 }}
+            transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
+            className="will-change-transform"
           >
             {activeTab === 'today' && <TodayView />}
             {activeTab === 'inbox' && <InboxView />}
@@ -317,7 +351,7 @@ function GoalOsShell() {
                 type="button"
                 onClick={() => setActiveTab(item.id)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`min-h-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl transition-colors relative ${
+                className={`min-h-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl transition-colors relative cursor-pointer ${
                   isActive
                     ? 'text-teal-700 dark:text-teal-400 font-semibold'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -326,7 +360,7 @@ function GoalOsShell() {
                 <div className="relative flex items-center justify-center">
                   <Icon className="w-5 h-5" />
                   {badgeCount > 0 && (
-                    <span className=" -top-1 -right-3 text-[10px] font-mono font-bold text-teal-700 dark:text-teal-300">
+                    <span className="absolute -top-1.5 -right-3.5 text-[10px] font-mono tabular-nums font-bold text-teal-700 dark:text-teal-300">
                       {badgeCount}
                     </span>
                   )}
@@ -387,7 +421,7 @@ function GoalOsShell() {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
-    </div>
+    </motion.div>
   );
 }
 
